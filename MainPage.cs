@@ -505,7 +505,7 @@ public class MainPage : ContentPage
             Text = "000", FontSize = 22, FontAttributes = FontAttributes.Bold,
             TextColor = Color.FromArgb("#FF3030"), BackgroundColor = Color.FromArgb("#202020"),
             HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center,
-            Padding = new Thickness(8, 4), Margin = new Thickness(4)
+            WidthRequest = 76, HeightRequest = 38, Margin = new Thickness(4)
         };
         var mineCounter = Counter();
         var clock = Counter();
