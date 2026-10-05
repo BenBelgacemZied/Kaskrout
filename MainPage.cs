@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls.Shapes;
+
 namespace Kaskrout;
 
 public class MainPage : ContentPage
