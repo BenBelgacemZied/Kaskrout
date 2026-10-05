@@ -1,6 +1,6 @@
 # Kaskrout
 
-Application .NET MAUI de mini-jeux pour se divertir avec des défis courts, des puzzles et des jeux de hasard.
+Application .NET MAUI avec une icône personnalisée et des mini-jeux pour se divertir avec des défis courts, des puzzles et des jeux de hasard.
 
 ## Jeux disponibles
 
