@@ -4,6 +4,38 @@ namespace Kaskrout;
 
 public class MainPage : ContentPage
 {
+    readonly string language;
+    static readonly Dictionary<string, string[]> Translations = new()
+    {
+        ["Une petite pause ?"] = ["A little break?", "Even pauze?"] ,
+        ["Choisis un mini-défi et amuse-toi !"] = ["Pick a mini challenge and have fun!", "Kies een mini-uitdaging en veel plezier!"],
+        ["points"] = ["points", "punten"], ["CHOISIS TON JEU"] = ["CHOOSE A GAME", "KIES EEN SPEL"],
+        ["Puzzle"] = ["Puzzle", "Puzzel"], ["Remets les tuiles en ordre"] = ["Put the tiles in order", "Zet de tegels op volgorde"],
+        ["Objet manquant"] = ["Missing object", "Ontbrekend voorwerp"], ["Observe, puis retrouve-le"] = ["Look, then find what's missing", "Kijk goed en vind wat ontbreekt"],
+        ["Paires"] = ["Matching pairs", "Paren"], ["Associe les images identiques"] = ["Match the identical pictures", "Zoek de gelijke plaatjes"],
+        ["Attrape les étoiles"] = ["Catch the stars", "Vang de sterren"], ["Tape vite avant la fin"] = ["Tap quickly before time runs out", "Tik snel voordat de tijd om is"],
+        ["Lance le dé"] = ["Roll the dice", "Gooi de dobbelsteen"], ["Un lancer porte-bonheur ?"] = ["A lucky roll?", "Een gelukkige worp?"],
+        ["Réflexe"] = ["Reflex", "Reflex"], ["Attends le vert et appuie"] = ["Wait for green, then tap", "Wacht op groen en tik"],
+        ["Éclate les bulles"] = ["Pop the bubbles", "Prik de bubbels"], ["Fais-en éclater un maximum"] = ["Pop as many as you can", "Prik er zoveel mogelijk"],
+        ["Pile ou face"] = ["Heads or tails", "Kop of munt"], ["La pièce choisit pour toi"] = ["Let the coin choose for you", "Laat de munt voor je kiezen"],
+        ["Machine surprise"] = ["Surprise machine", "Verrassingsmachine"], ["Quel emoji va sortir ?"] = ["Which emoji will appear?", "Welke emoji verschijnt er?"],
+        ["Puzzle coulissant"] = ["Sliding puzzle", "Schuifpuzzel"], ["Fais glisser les nombres pour les ranger de 1 à 8."] = ["Slide the numbers to put them in order from 1 to 8.", "Schuif de cijfers op volgorde van 1 tot 8."],
+        ["Coups : 0"] = ["Moves: 0", "Zetten: 0"], ["Mélanger"] = ["Shuffle", "Schudden"],
+        ["Observe les images, puis retrouve celle qui a disparu."] = ["Study the pictures, then find the one that disappeared.", "Bekijk de plaatjes en vind daarna wat verdwenen is."],
+        ["Bien joué !"] = ["Well done!", "Goed gedaan!"], ["Mémorise bien…"] = ["Memorize them…", "Onthoud ze goed…"], ["Lequel a disparu ?"] = ["Which one is missing?", "Welke ontbreekt?"], ["Exactement ! ✨"] = ["That's right! ✨", "Precies! ✨"],
+        ["Rejouer"] = ["Play again", "Opnieuw spelen"], ["Jeu des paires"] = ["Matching pairs", "Paren zoeken"], ["Retourne deux cartes et retrouve les images identiques."] = ["Flip two cards and find matching pictures.", "Draai twee kaarten om en zoek dezelfde plaatjes."],
+        ["Paires trouvées : 0 / 6"] = ["Pairs found: 0 / 6", "Paren gevonden: 0 / 6"], ["Toutes les paires trouvées ! 🎉"] = ["All pairs found! 🎉", "Alle paren gevonden! 🎉"], ["Nouvelle partie"] = ["New game", "Nieuw spel"],
+        ["Tape la case avec l’étoile avant la fin du chrono !"] = ["Tap the square with the star before time runs out!", "Tik op het vakje met de ster voordat de tijd om is!"],
+        ["Lance le dé et essaie d’obtenir un six !"] = ["Roll the dice and try to get a six!", "Gooi de dobbelsteen en probeer zes te halen!"], ["À toi de jouer !"] = ["Your turn!", "Jij bent aan de beurt!"], ["Ça tourne…"] = ["Rolling…", "Hij rolt…"],
+        ["Attends le vert… puis appuie vite !"] = ["Wait for green… then tap quickly!", "Wacht op groen… en tik dan snel!"], ["Patiente un instant…"] = ["Wait a moment…", "Wacht even…"], ["Trop tôt ! Essaie encore."] = ["Too soon! Try again.", "Te vroeg! Probeer opnieuw."], ["MAINTENANT !"] = ["NOW!", "NU!"], ["Encore"] = ["Again", "Nog een keer"],
+        ["Tape les bulles colorées avant la fin du chrono !"] = ["Tap the colorful bubbles before time runs out!", "Tik op de gekleurde bubbels voordat de tijd om is!"],
+        ["Pas besoin de choisir : lance la pièce !"] = ["No need to choose: flip the coin!", "Je hoeft niet te kiezen: gooi de munt op!"], ["Pile… ou face ?"] = ["Heads… or tails?", "Kop… of munt?"], ["Lancer la pièce"] = ["Flip the coin", "Gooi de munt"], ["La pièce tourne…"] = ["The coin is spinning…", "De munt draait…"], ["PILE !"] = ["HEADS!", "KOP!"], ["FACE !"] = ["TAILS!", "MUNT!"],
+        ["Appuie et découvre ton emoji porte-bonheur !"] = ["Tap and discover your lucky emoji!", "Tik en ontdek je geluks-emoji!"], ["Qui va apparaître ?"] = ["Who will appear?", "Wie verschijnt er?"], ["Surprise !"] = ["Surprise!", "Verrassing!"], ["Roulement…"] = ["Rolling…", "Spannend…"], ["Encore ?"] = ["Again?", "Nog een keer?"],
+        ["seconde"] = ["second", "seconde"], ["secondes"] = ["seconds", "seconden"], ["étoile"] = ["star", "ster"], ["étoiles"] = ["stars", "sterren"], ["bulle"] = ["bubble", "bubbel"], ["bulles éclatées"] = ["bubbles popped", "bubbels geprikt"],
+        ["Terminé !"] = ["Time's up!", "Tijd is om!"], ["Tu as trouvé"] = ["You found", "Je vond"], ["objets sur"] = ["objects out of", "voorwerpen van"], ["C’était"] = ["It was", "Het was"], ["Bravo ! Puzzle terminé en"] = ["Great! Puzzle completed in", "Goed gedaan! Puzzel opgelost in"], ["coups"] = ["moves", "zetten"], ["Tu as obtenu"] = ["You rolled", "Je gooide"], ["Un six ! +3 points 🎉"] = ["A six! +3 points 🎉", "Zes! +3 punten 🎉"],
+        ["étoile(s) !"] = ["star(s)!", "ster(ren)!"], ["étoiles attrapées"] = ["stars caught", "sterren gevangen"],
+        ["Langue : Français"] = ["Language: English", "Taal: Nederlands"],
+    };
     static readonly Color Ink = Color.FromArgb("#202743");
     static readonly Color Muted = Color.FromArgb("#7D849B");
     static readonly Color Paper = Color.FromArgb("#F7F6FC");
@@ -18,17 +50,32 @@ public class MainPage : ContentPage
     bool armed;
     DateTime startAt;
 
-    public MainPage()
+    public MainPage(string language = "fr")
     {
+        this.language = language;
         Title = "Kaskrout";
         BackgroundColor = Paper;
         Content = new ScrollView { Content = body };
         ShowHome();
     }
 
+    string T(string value) => language switch
+    {
+        "en" when Translations.TryGetValue(value, out var english) => english[0],
+        "nl" when Translations.TryGetValue(value, out var dutch) => dutch[1],
+        _ => value
+    };
+
+    string F(string french, string english, string dutch) => language switch
+    {
+        "en" => english,
+        "nl" => dutch,
+        _ => french
+    };
+
     Label Text(string value, double size, bool bold = false, Color? color = null) => new()
     {
-        Text = value, FontSize = size,
+        Text = T(value), FontSize = size,
         FontAttributes = bold ? FontAttributes.Bold : FontAttributes.None,
         TextColor = color ?? Ink, HorizontalTextAlignment = TextAlignment.Center,
         VerticalTextAlignment = TextAlignment.Center
@@ -38,7 +85,7 @@ public class MainPage : ContentPage
     {
         var button = new Button
         {
-            Text = label, BackgroundColor = color, TextColor = Colors.White,
+            Text = T(label), BackgroundColor = color, TextColor = Colors.White,
             CornerRadius = 18, HeightRequest = height, FontSize = 18,
             FontAttributes = FontAttributes.Bold
         };
@@ -75,9 +122,10 @@ public class MainPage : ContentPage
             Stroke = Color.FromArgb("#F1E5B7"), StrokeThickness = 1,
             StrokeShape = new RoundRectangle { CornerRadius = 24 },
             Padding = new Thickness(18, 8),
-            Content = Text($"⭐  {points} points", 17, true, Color.FromArgb("#BA841C"))
+            Content = Text(F($"⭐  {points} points", $"⭐  {points} points", $"⭐  {points} punten"), 17, true, Color.FromArgb("#BA841C"))
         };
         body.Children.Add(scorePill);
+        body.Children.Add(MakeButton(F("🌐  Langue : Français", "🌐  Language: English", "🌐  Taal: Nederlands"), Purple, SelectLanguage, 46));
         body.Children.Add(Text("CHOISIS TON JEU", 13, true, Muted));
 
         var games = new (string Icon, string Title, string Detail, string Color, Action Play)[]
@@ -150,6 +198,8 @@ public class MainPage : ContentPage
         body.Children.Add(Text(subtitle, 15, false, Muted));
     }
 
+    void SelectLanguage() => Application.Current!.MainPage = new LanguageSelectionPage();
+
     Border Panel(View content, Color? color = null) => new()
     {
         BackgroundColor = color ?? Colors.White,
@@ -180,11 +230,11 @@ public class MainPage : ContentPage
             {
                 if (index == empty || !IsNeighbor(index, empty)) return;
                 (tiles[index], tiles[empty]) = (tiles[empty], tiles[index]);
-                empty = index; moves++; status.Text = $"Coups : {moves}";
+                empty = index; moves++; status.Text = F($"Coups : {moves}", $"Moves: {moves}", $"Zetten: {moves}");
                 RefreshTiles();
                 if (tiles.SequenceEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 0 }))
                 {
-                    status.Text = $"Bravo ! Puzzle terminé en {moves} coups 🎉";
+                    status.Text = F($"Bravo ! Puzzle terminé en {moves} coups 🎉", $"Great! Puzzle completed in {moves} moves 🎉", $"Goed gedaan! Puzzel opgelost in {moves} zetten 🎉");
                     AddPoints(10);
                     foreach (var tile in buttons) tile.IsEnabled = false;
                 }
@@ -240,7 +290,7 @@ public class MainPage : ContentPage
                 roundArea.Children.Add(Panel(new VerticalStackLayout
                 {
                     Spacing = 12,
-                    Children = { Text("Bien joué !", 26, true, Green), Text($"Tu as trouvé {score} objets sur {rounds.Length}.", 18) }
+                    Children = { Text("Bien joué !", 26, true, Green), Text(F($"Tu as trouvé {score} objets sur {rounds.Length}.", $"You found {score} objects out of {rounds.Length}.", $"Je vond {score} voorwerpen van de {rounds.Length}."), 18) }
                 }));
                 roundArea.Children.Add(MakeButton("Rejouer", Purple, PlayMissingObject));
                 AddPoints(score * 3);
@@ -259,7 +309,7 @@ public class MainPage : ContentPage
             {
                 if (!body.Children.Contains(roundArea) || !roundArea.Children.Contains(panel)) return;
                 visible.Text = string.Join("   ", items.Where(x => x != missing));
-                question.Text = "Lequel a disparu ?";
+                question.Text = T("Lequel a disparu ?");
                 var decoys = new[] { "🍋", "🛴", "🐶", "🎁", "☀️", "🍪", "🚕", "🐻", "🎾", "🍇" }
                     .Where(x => !items.Contains(x)).OrderBy(_ => random.Next()).Take(3).ToList();
                 foreach (var option in decoys.Append(missing).OrderBy(_ => random.Next()))
@@ -267,8 +317,8 @@ public class MainPage : ContentPage
                     var answer = MakeButton(option, Color.FromArgb("#F2F0FB"), () =>
                     {
                         if (optionsArea.Children.All(x => !x.IsEnabled)) return;
-                        if (option == missing) { score++; question.Text = "Exactement ! ✨"; }
-                        else question.Text = $"C’était {missing} !";
+                        if (option == missing) { score++; question.Text = T("Exactement ! ✨"); }
+                        else question.Text = F($"C’était {missing} !", $"It was {missing}!", $"Het was {missing}!");
                         foreach (var child in optionsArea.Children)
                             if (child is Button button) button.IsEnabled = false;
                         round++;
@@ -314,7 +364,7 @@ public class MainPage : ContentPage
                     matched.Add(first); matched.Add(second); matches++; AddPoints(2);
                     cards[first].BackgroundColor = Color.FromArgb("#DFF4EC");
                     cards[second].BackgroundColor = Color.FromArgb("#DFF4EC");
-                    status.Text = matches == 6 ? "Toutes les paires trouvées ! 🎉" : $"Paires trouvées : {matches} / 6";
+                    status.Text = matches == 6 ? T("Toutes les paires trouvées ! 🎉") : F($"Paires trouvées : {matches} / 6", $"Pairs found: {matches} / 6", $"Paren gevonden: {matches} / 6");
                     if (matches == 6) AddPoints(8);
                 }
                 else { cards[first].Text = "?"; cards[second].Text = "?"; }
@@ -331,8 +381,8 @@ public class MainPage : ContentPage
     {
         StartPage("Attrape les étoiles", "Tape la case avec l’étoile avant la fin du chrono !");
         taps = 0; seconds = 20; running = true;
-        var timer = Text("20 secondes", 17, true, Muted);
-        var score = Text("0 étoile", 20, true);
+        var timer = Text(F("20 secondes", "20 seconds", "20 seconden"), 17, true, Muted);
+        var score = Text(F("0 étoile", "0 stars", "0 sterren"), 20, true);
         var grid = new Grid { RowSpacing = 8, ColumnSpacing = 8, HeightRequest = 300 };
         for (var i = 0; i < 3; i++)
         {
@@ -350,7 +400,7 @@ public class MainPage : ContentPage
             cell.Clicked += (_, _) =>
             {
                 if (!running || cellIndex != starCell) return;
-                taps++; score.Text = $"{taps} étoile{(taps == 1 ? "" : "s")} !";
+                taps++; score.Text = F($"{taps} étoile{(taps == 1 ? "" : "s")} !", $"{taps} star{(taps == 1 ? "" : "s")}!", $"{taps} ster{(taps == 1 ? "" : "ren")}!");
                 var previous = starCell;
                 do starCell = random.Next(9); while (starCell == previous);
                 for (var j = 0; j < cells.Length; j++)
@@ -365,9 +415,9 @@ public class MainPage : ContentPage
         Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
         {
             if (!running) return false;
-            seconds--; timer.Text = $"{seconds} seconde{(seconds == 1 ? "" : "s")}";
+            seconds--; timer.Text = F($"{seconds} seconde{(seconds == 1 ? "" : "s")}", $"{seconds} second{(seconds == 1 ? "" : "s")}", $"{seconds} seconde{(seconds == 1 ? "" : "n")}");
             if (seconds > 0) return true;
-            running = false; AddPoints(taps); score.Text = $"Terminé ! {taps} étoiles attrapées 🎉";
+            running = false; AddPoints(taps); score.Text = F($"Terminé ! {taps} étoiles attrapées 🎉", $"Time's up! You caught {taps} stars 🎉", $"Tijd is om! Je ving {taps} sterren 🎉");
             foreach (var cell in cells) cell.IsEnabled = false;
             return false;
         });
@@ -381,7 +431,7 @@ public class MainPage : ContentPage
         body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(10, 22), Children = { face, result } }, Color.FromArgb("#F1EEFF")));
         body.Children.Add(MakeButton("Lancer le dé", Green, async () =>
         {
-            result.Text = "Ça tourne…";
+            result.Text = T("Ça tourne…");
             for (var i = 0; i < 7; i++)
             {
                 face.Text = new[] { "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }[random.Next(6)];
@@ -389,7 +439,7 @@ public class MainPage : ContentPage
             }
             var number = random.Next(1, 7);
             face.Text = new[] { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }[number];
-            result.Text = number == 6 ? "Un six ! +3 points 🎉" : $"Tu as obtenu {number}. Encore ?";
+            result.Text = number == 6 ? T("Un six ! +3 points 🎉") : F($"Tu as obtenu {number}. Encore ?", $"You rolled {number}. Again?", $"Je gooide {number}. Nog een keer?");
             if (number == 6) AddPoints(3);
         }));
     }
@@ -405,13 +455,13 @@ public class MainPage : ContentPage
             if (!running) return;
             if (!armed)
             {
-                running = false; status.Text = "Trop tôt ! Essaie encore."; circle.Text = "🙈";
+                running = false; status.Text = T("Trop tôt ! Essaie encore."); circle.Text = "🙈";
                 body.Children.Add(MakeButton("Rejouer", Purple, PlayReflex)); return;
             }
             running = false;
             var milliseconds = (DateTime.UtcNow - startAt).TotalMilliseconds;
             var reward = Math.Max(1, 10 - (int)(milliseconds / 100)); AddPoints(reward);
-            status.Text = $"{milliseconds:0} ms — +{reward} points !";
+            status.Text = F($"{milliseconds:0} ms — +{reward} points !", $"{milliseconds:0} ms — +{reward} points!", $"{milliseconds:0} ms — +{reward} punten!");
             body.Children.Add(MakeButton("Encore", Purple, PlayReflex));
         }, 230);
         circle.FontSize = 70;
@@ -421,7 +471,7 @@ public class MainPage : ContentPage
         {
             if (!running) return;
             armed = true; startAt = DateTime.UtcNow; circle.Text = "🟢";
-            circle.BackgroundColor = Green; status.Text = "MAINTENANT !";
+            circle.BackgroundColor = Green; status.Text = T("MAINTENANT !");
         }));
     }
 
@@ -429,7 +479,7 @@ public class MainPage : ContentPage
     {
         StartPage("Éclate les bulles", "Tape les bulles colorées avant la fin du chrono !");
         taps = 0; seconds = 20; running = true;
-        var timer = Text("20 secondes", 17, true, Muted); var score = Text("0 bulle", 20, true);
+        var timer = Text(F("20 secondes", "20 seconds", "20 seconden"), 17, true, Muted); var score = Text(F("0 bulle", "0 bubbles", "0 bubbels"), 20, true);
         var grid = new Grid { RowSpacing = 9, ColumnSpacing = 9, HeightRequest = 330 };
         for (var i = 0; i < 4; i++)
         {
@@ -446,7 +496,7 @@ public class MainPage : ContentPage
             bubble.Clicked += (_, _) =>
             {
                 if (!running) return;
-                taps++; score.Text = $"{taps} bulles éclatées !"; bubble.Text = "✨";
+                taps++; score.Text = F($"{taps} bulles éclatées !", $"{taps} bubbles popped!", $"{taps} bubbels geprikt!"); bubble.Text = "✨";
                 Task.Delay(160).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(() => { if (running) bubble.Text = "●"; }));
             };
             bubbles[i] = bubble; grid.Add(bubble, i % 4, i / 4);
@@ -455,9 +505,9 @@ public class MainPage : ContentPage
         Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
         {
             if (!running) return false;
-            seconds--; timer.Text = $"{seconds} seconde{(seconds == 1 ? "" : "s")}";
+            seconds--; timer.Text = F($"{seconds} seconde{(seconds == 1 ? "" : "s")}", $"{seconds} second{(seconds == 1 ? "" : "s")}", $"{seconds} seconde{(seconds == 1 ? "" : "n")}");
             if (seconds > 0) return true;
-            running = false; AddPoints(taps); score.Text = $"Terminé ! {taps} bulles éclatées 🫧";
+            running = false; AddPoints(taps); score.Text = F($"Terminé ! {taps} bulles éclatées 🫧", $"Time's up! {taps} bubbles popped 🫧", $"Tijd is om! {taps} bubbels geprikt 🫧");
             foreach (var bubble in bubbles) bubble.IsEnabled = false;
             return false;
         });
@@ -470,9 +520,9 @@ public class MainPage : ContentPage
         body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { coin, result } }, Color.FromArgb("#FFF7E4")));
         body.Children.Add(MakeButton("Lancer la pièce", Color.FromArgb("#E7A735"), async () =>
         {
-            result.Text = "La pièce tourne…";
+            result.Text = T("La pièce tourne…");
             for (var i = 0; i < 6; i++) { coin.Text = i % 2 == 0 ? "🟡" : "⚪"; await Task.Delay(100); }
-            var pile = random.Next(2) == 0; coin.Text = pile ? "🟡" : "⚪"; result.Text = pile ? "PILE !" : "FACE !";
+            var pile = random.Next(2) == 0; coin.Text = pile ? "🟡" : "⚪"; result.Text = T(pile ? "PILE !" : "FACE !");
         }));
     }
 
@@ -484,9 +534,9 @@ public class MainPage : ContentPage
         body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { display, message } }, Color.FromArgb("#FCEAF4")));
         body.Children.Add(MakeButton("Surprise !", Color.FromArgb("#DE5E91"), async () =>
         {
-            message.Text = "Roulement…";
+            message.Text = T("Roulement…");
             for (var i = 0; i < 8; i++) { display.Text = emojis[random.Next(emojis.Length)]; await Task.Delay(90); }
-            display.Text = emojis[random.Next(emojis.Length)]; message.Text = "Encore ?";
+            display.Text = emojis[random.Next(emojis.Length)]; message.Text = T("Encore ?");
         }));
     }
 
