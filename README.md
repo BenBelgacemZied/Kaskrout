@@ -21,9 +21,9 @@ Ouvre `Kaskrout.csproj` dans Visual Studio avec le workload .NET MAUI, puis choi
 
 Chaque push sur `main` lance le workflow **Build Kaskrout Android APK**. Après le succès, télécharge `Kaskrout-Android-APK` depuis l’onglet **Actions** du dépôt. Tu peux aussi lancer le workflow manuellement depuis Actions.
 
-Pour compiler localement avec .NET 9 :
+Pour compiler localement avec .NET 10 :
 
 ```sh
 dotnet workload install maui-android
-dotnet publish Kaskrout.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk
+dotnet publish Kaskrout.csproj -f net10.0-android -c Release -p:TargetFrameworks=net10.0-android -p:AndroidPackageFormat=apk
 ```
