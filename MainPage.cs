@@ -93,7 +93,7 @@ public class MainPage : ContentPage
         {
             Text = $"{emoji}   {title}\n{detail}", BackgroundColor = Colors.White,
             TextColor = Ink, CornerRadius = 22, HeightRequest = 90,
-            FontSize = 17, HorizontalTextAlignment = TextAlignment.Start,
+            FontSize = 17,
             Padding = new Thickness(18, 10), BorderColor = color, BorderWidth = 1
         };
         button.Clicked += (_, _) => action();
@@ -146,7 +146,7 @@ public class MainPage : ContentPage
         body.Children.Add(timer);
         body.Children.Add(grid);
         body.Children.Add(score);
-        Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+        Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
         {
             if (!running) return false;
             seconds--;
@@ -166,7 +166,8 @@ public class MainPage : ContentPage
         armed = false;
         running = true;
         var status = Text("Patiente un instant…", 18, true, Muted);
-        var circle = MakeButton("🟠", Color.FromArgb("#ED7C55"), () =>
+        Button circle = null!;
+        circle = MakeButton("🟠", Color.FromArgb("#ED7C55"), () =>
         {
             if (!running) return;
             if (!armed)
@@ -283,7 +284,7 @@ public class MainPage : ContentPage
         body.Children.Add(timer);
         body.Children.Add(bubbleGrid);
         body.Children.Add(score);
-        Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+        Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
         {
             if (!running) return false;
             seconds--;
@@ -292,7 +293,8 @@ public class MainPage : ContentPage
             running = false;
             AddPoints(taps);
             score.Text = $"Terminé ! {taps} bulles éclatées 🫧";
-            foreach (var view in bubbleGrid.Children) view.IsEnabled = false;
+            foreach (var view in bubbleGrid.Children)
+                if (view is Button button) button.IsEnabled = false;
             return false;
         });
     }
