@@ -1,14 +1,29 @@
 # Kaskrout
 
-Petite application .NET MAUI pour Android, iOS, macOS et Windows. Elle propose quatre mini-jeux sans règles compliquées : Attrape les étoiles, Réflexe, Lance le dé et Pile ou face.
+Petite application .NET MAUI de mini-jeux pour passer le temps, sans règles compliquées.
 
-## Lancer
+## Jeux disponibles
 
-Installer le SDK .NET 9 avec workload MAUI, puis depuis ce dossier :
+- **Attrape les étoiles** : trouve et tape l’étoile dans une grille avant la fin du chrono.
+- **Réflexe** : attends le feu vert et appuie le plus vite possible.
+- **Lance le dé** : lance le dé autant de fois que tu veux.
+- **Pile ou face** : laisse la pièce choisir.
+- **Machine surprise** : découvre un emoji au hasard.
+- **Éclate les bulles** : tape le plus de bulles en 20 secondes.
+
+Les points gagnés sont sauvegardés sur l’appareil.
+
+## Lancer avec Visual Studio
+
+Ouvre `Kaskrout.csproj` dans Visual Studio avec le workload .NET MAUI, puis choisis un émulateur Android.
+
+## APK Android
+
+Chaque push sur `main` lance le workflow **Build Kaskrout Android APK**. Après le succès, télécharge `Kaskrout-Android-APK` depuis l’onglet **Actions** du dépôt. Tu peux aussi lancer le workflow manuellement depuis Actions.
+
+Pour compiler localement avec .NET 9 :
 
 ```sh
-dotnet workload install maui
-dotnet build -f net9.0-android
+dotnet workload install maui-android
+dotnet publish Kaskrout.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk
 ```
-
-Ouvrir `Kaskrout.csproj` dans Visual Studio avec le workload .NET MAUI permet aussi de lancer l'application sur Android Emulator.
