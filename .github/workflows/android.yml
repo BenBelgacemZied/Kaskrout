@@ -1,0 +1,28 @@
+name: Build Kaskrout Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Install .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+      - name: Build APK
+        run: dotnet publish Kaskrout.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk -o ./artifacts/apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kaskrout-Android-APK
+          path: artifacts/apk/*.apk
+          if-no-files-found: error
+          retention-days: 14
