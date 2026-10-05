@@ -1,15 +1,15 @@
 # Kaskrout
 
-Petite application .NET MAUI de mini-jeux pour passer le temps, sans règles compliquées.
+Application .NET MAUI de mini-jeux pour se divertir avec des défis courts, des puzzles et des jeux de hasard.
 
 ## Jeux disponibles
 
-- **Attrape les étoiles** : trouve et tape l’étoile dans une grille avant la fin du chrono.
-- **Réflexe** : attends le feu vert et appuie le plus vite possible.
-- **Lance le dé** : lance le dé autant de fois que tu veux.
-- **Pile ou face** : laisse la pièce choisir.
-- **Machine surprise** : découvre un emoji au hasard.
-- **Éclate les bulles** : tape le plus de bulles en 20 secondes.
+- **Puzzle coulissant** : range les tuiles de 1 à 8.
+- **Objet manquant** : observe les images et retrouve celle qui a disparu.
+- **Jeu des paires** : retourne les cartes et associe les images identiques.
+- **Attrape les étoiles** : trouve l’étoile dans la grille avant la fin du chrono.
+- **Lance le dé** et **Pile ou face** : mini-jeux de hasard avec animations.
+- **Réflexe**, **Éclate les bulles** et **Machine surprise**.
 
 Les points gagnés sont sauvegardés sur l’appareil.
 
@@ -19,7 +19,7 @@ Ouvre `Kaskrout.csproj` dans Visual Studio avec le workload .NET MAUI, puis choi
 
 ## APK Android
 
-Chaque push sur `main` lance le workflow **Build Kaskrout Android APK**. Après le succès, télécharge `Kaskrout-Android-APK` depuis l’onglet **Actions** du dépôt. Tu peux aussi lancer le workflow manuellement depuis Actions.
+Chaque mise à jour de `main` lance le workflow **Build Kaskrout Android APK**. Après la réussite, télécharge `Kaskrout-Android-APK` depuis l’onglet **Actions**. L’artefact est conservé 14 jours. Tu peux aussi lancer le workflow manuellement.
 
 Pour compiler localement avec .NET 10 :
 
