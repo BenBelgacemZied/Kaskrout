@@ -13,6 +13,8 @@ Application .NET MAUI avec une icône personnalisée et des mini-jeux pour se di
 
 Les points gagnés sont sauvegardés sur l’appareil.
 
+Après l’installation d’une nouvelle version avec une icône modifiée, désinstalle l’ancienne version puis installe le nouvel APK afin de rafraîchir l’icône du lanceur Android.
+
 ## Lancer avec Visual Studio
 
 Ouvre `Kaskrout.csproj` dans Visual Studio avec le workload .NET MAUI, puis choisis un émulateur Android.
