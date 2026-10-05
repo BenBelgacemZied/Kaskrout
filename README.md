@@ -11,7 +11,8 @@ L’application est disponible en français, anglais et néerlandais. Au premier
 - **Jeu des paires** : retourne les cartes et associe les images identiques.
 - **Attrape les étoiles** : trouve l’étoile dans la grille avant la fin du chrono.
 - **Lance le dé** et **Pile ou face** : mini-jeux de hasard avec animations.
-- **Réflexe**, **Éclate les bulles** et **Machine surprise**.
+- **XP Minesweeper Classic** : trouve les cases sûres, marque les mines et nettoie la grille.
+- **Réflexe** et **Machine surprise**.
 
 Les points gagnés sont sauvegardés sur l’appareil.
 
