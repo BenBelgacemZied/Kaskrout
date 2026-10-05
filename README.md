@@ -2,6 +2,8 @@
 
 Application .NET MAUI avec une icône personnalisée et des mini-jeux pour se divertir avec des défis courts, des puzzles et des jeux de hasard.
 
+L’application est disponible en français, anglais et néerlandais. Au premier lancement, elle demande de choisir une langue. Le choix est mémorisé sur l’appareil et peut être modifié depuis l’accueil.
+
 ## Jeux disponibles
 
 - **Puzzle coulissant** : range les tuiles de 1 à 8.
