@@ -16,7 +16,14 @@ public class MainPage : ContentPage
         ["Attrape les étoiles"] = ["Catch the stars", "Vang de sterren"], ["Tape vite avant la fin"] = ["Tap quickly before time runs out", "Tik snel voordat de tijd om is"],
         ["Lance le dé"] = ["Roll the dice", "Gooi de dobbelsteen"], ["Un lancer porte-bonheur ?"] = ["A lucky roll?", "Een gelukkige worp?"],
         ["Réflexe"] = ["Reflex", "Reflex"], ["Attends le vert et appuie"] = ["Wait for green, then tap", "Wacht op groen en tik"],
-        ["Éclate les bulles"] = ["Pop the bubbles", "Prik de bubbels"], ["Fais-en éclater un maximum"] = ["Pop as many as you can", "Prik er zoveel mogelijk"],
+        ["XP Minesweeper Classic"] = ["XP Minesweeper Classic", "XP Minesweeper Classic"],
+        ["Trouve les cases sûres"] = ["Find the safe squares", "Vind de veilige vakjes"],
+        ["Découvre toutes les cases sans mine. Active le mode drapeau pour signaler un danger."] = ["Reveal every square without a mine. Turn on flag mode to mark a danger.", "Onthul alle vakjes zonder mijn. Zet de vlagmodus aan om gevaar aan te geven."],
+        ["Drapeaux : désactivés"] = ["Flags: off", "Vlaggen: uit"], ["Drapeaux : activés"] = ["Flags: on", "Vlaggen: aan"],
+        ["Première case sûre. À toi de jouer !"] = ["First square is safe. Your turn!", "Eerste vakje is veilig. Jij bent aan de beurt!"],
+        ["Mines révélées ! Recommence pour tenter ta chance."] = ["Mine revealed! Start a new game and try again.", "Mijn gevonden! Start een nieuw spel en probeer opnieuw."],
+        ["Grille nettoyée ! +10 points 🎉"] = ["Board cleared! +10 points 🎉", "Bord leeggemaakt! +10 punten 🎉"],
+        ["Nouvelle partie"] = ["New game", "Nieuw spel"],
         ["Pile ou face"] = ["Heads or tails", "Kop of munt"], ["La pièce choisit pour toi"] = ["Let the coin choose for you", "Laat de munt voor je kiezen"],
         ["Machine surprise"] = ["Surprise machine", "Verrassingsmachine"], ["Quel emoji va sortir ?"] = ["Which emoji will appear?", "Welke emoji verschijnt er?"],
         ["Puzzle coulissant"] = ["Sliding puzzle", "Schuifpuzzel"], ["Fais glisser les nombres pour les ranger de 1 à 8."] = ["Slide the numbers to put them in order from 1 to 8.", "Schuif de cijfers op volgorde van 1 tot 8."],
@@ -28,10 +35,9 @@ public class MainPage : ContentPage
         ["Tape la case avec l’étoile avant la fin du chrono !"] = ["Tap the square with the star before time runs out!", "Tik op het vakje met de ster voordat de tijd om is!"],
         ["Lance le dé et essaie d’obtenir un six !"] = ["Roll the dice and try to get a six!", "Gooi de dobbelsteen en probeer zes te halen!"], ["À toi de jouer !"] = ["Your turn!", "Jij bent aan de beurt!"], ["Ça tourne…"] = ["Rolling…", "Hij rolt…"],
         ["Attends le vert… puis appuie vite !"] = ["Wait for green… then tap quickly!", "Wacht op groen… en tik dan snel!"], ["Patiente un instant…"] = ["Wait a moment…", "Wacht even…"], ["Trop tôt ! Essaie encore."] = ["Too soon! Try again.", "Te vroeg! Probeer opnieuw."], ["MAINTENANT !"] = ["NOW!", "NU!"], ["Encore"] = ["Again", "Nog een keer"],
-        ["Tape les bulles colorées avant la fin du chrono !"] = ["Tap the colorful bubbles before time runs out!", "Tik op de gekleurde bubbels voordat de tijd om is!"],
         ["Pas besoin de choisir : lance la pièce !"] = ["No need to choose: flip the coin!", "Je hoeft niet te kiezen: gooi de munt op!"], ["Pile… ou face ?"] = ["Heads… or tails?", "Kop… of munt?"], ["Lancer la pièce"] = ["Flip the coin", "Gooi de munt"], ["La pièce tourne…"] = ["The coin is spinning…", "De munt draait…"], ["PILE !"] = ["HEADS!", "KOP!"], ["FACE !"] = ["TAILS!", "MUNT!"],
         ["Appuie et découvre ton emoji porte-bonheur !"] = ["Tap and discover your lucky emoji!", "Tik en ontdek je geluks-emoji!"], ["Qui va apparaître ?"] = ["Who will appear?", "Wie verschijnt er?"], ["Surprise !"] = ["Surprise!", "Verrassing!"], ["Roulement…"] = ["Rolling…", "Spannend…"], ["Encore ?"] = ["Again?", "Nog een keer?"],
-        ["seconde"] = ["second", "seconde"], ["secondes"] = ["seconds", "seconden"], ["étoile"] = ["star", "ster"], ["étoiles"] = ["stars", "sterren"], ["bulle"] = ["bubble", "bubbel"], ["bulles éclatées"] = ["bubbles popped", "bubbels geprikt"],
+        ["seconde"] = ["second", "seconde"], ["secondes"] = ["seconds", "seconden"], ["étoile"] = ["star", "ster"], ["étoiles"] = ["stars", "sterren"],
         ["Terminé !"] = ["Time's up!", "Tijd is om!"], ["Tu as trouvé"] = ["You found", "Je vond"], ["objets sur"] = ["objects out of", "voorwerpen van"], ["C’était"] = ["It was", "Het was"], ["Bravo ! Puzzle terminé en"] = ["Great! Puzzle completed in", "Goed gedaan! Puzzel opgelost in"], ["coups"] = ["moves", "zetten"], ["Tu as obtenu"] = ["You rolled", "Je gooide"], ["Un six ! +3 points 🎉"] = ["A six! +3 points 🎉", "Zes! +3 punten 🎉"],
         ["étoile(s) !"] = ["star(s)!", "ster(ren)!"], ["étoiles attrapées"] = ["stars caught", "sterren gevangen"],
         ["Langue : Français"] = ["Language: English", "Taal: Nederlands"],
@@ -136,7 +142,7 @@ public class MainPage : ContentPage
             ("🎯", "Attrape les étoiles", "Tape vite avant la fin", "#FFF7D9", PlayStars),
             ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", PlayDice),
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", PlayReflex),
-            ("🫧", "Éclate les bulles", "Fais-en éclater un maximum", "#E2F7FC", PlayBubbles),
+            ("💣", "XP Minesweeper Classic", "Trouve les cases sûres", "#E8EEF5", PlayMinesweeper),
             ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", PlayCoin),
             ("🎰", "Machine surprise", "Quel emoji va sortir ?", "#FCE8F4", PlaySurprise)
         };
@@ -154,7 +160,7 @@ public class MainPage : ContentPage
                 BackgroundColor = Colors.White,
                 Stroke = Color.FromArgb(game.Color), StrokeThickness = 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 23 },
-                Padding = new Thickness(14), HeightRequest = 158,
+                Padding = new Thickness(14), HeightRequest = 168,
                 Content = new VerticalStackLayout
                 {
                     Spacing = 7, VerticalOptions = LayoutOptions.Center,
@@ -475,43 +481,237 @@ public class MainPage : ContentPage
         }));
     }
 
-    void PlayBubbles()
+    void PlayMinesweeper()
     {
-        StartPage("Éclate les bulles", "Tape les bulles colorées avant la fin du chrono !");
-        taps = 0; seconds = 20; running = true;
-        var timer = Text(F("20 secondes", "20 seconds", "20 seconden"), 17, true, Muted); var score = Text(F("0 bulle", "0 bubbles", "0 bubbels"), 20, true);
-        var grid = new Grid { RowSpacing = 9, ColumnSpacing = 9, HeightRequest = 330 };
-        for (var i = 0; i < 4; i++)
+        const int size = 9;
+        const int mineTotal = 10;
+        StartPage("XP Minesweeper Classic", T("Découvre toutes les cases sans mine. Active le mode drapeau pour signaler un danger."));
+
+        var mines = new bool[size, size];
+        var opened = new bool[size, size];
+        var flagged = new bool[size, size];
+        var cells = new Button[size, size];
+        var generated = false;
+        var gameOver = false;
+        var flagMode = false;
+        var openedCount = 0;
+        var flagCount = 0;
+        var elapsed = 0;
+        var hitRow = -1;
+        var hitColumn = -1;
+        var status = Text(T("Première case sûre. À toi de jouer !"), 14, true, Muted);
+
+        Label Counter() => new()
+        {
+            Text = "000", FontSize = 22, FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#FF3030"), BackgroundColor = Color.FromArgb("#202020"),
+            HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center,
+            Padding = new Thickness(8, 4), Margin = new Thickness(4)
+        };
+        var mineCounter = Counter();
+        var clock = Counter();
+        var reset = new Button
+        {
+            Text = "🙂", FontSize = 26, WidthRequest = 50, HeightRequest = 48,
+            Padding = 0, Margin = new Thickness(4), CornerRadius = 4,
+            BackgroundColor = Color.FromArgb("#C0C0C0")
+        };
+        reset.Clicked += (_, _) => PlayMinesweeper();
+        var header = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(new GridLength(1, GridUnitType.Star)),
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(new GridLength(1, GridUnitType.Star))
+            },
+            BackgroundColor = Color.FromArgb("#C0C0C0"), Padding = 4
+        };
+        header.Add(mineCounter, 0, 0);
+        header.Add(reset, 1, 0);
+        header.Add(clock, 2, 0);
+
+        var grid = new Grid { RowSpacing = 2, ColumnSpacing = 2, HeightRequest = 360 };
+        for (var i = 0; i < size; i++)
         {
             grid.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
             grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         }
-        var colors = new[] { "#72D6E8", "#F4A7D5", "#A69BFA", "#87DDAA", "#FFD477" };
-        var bubbles = new Button[16];
-        for (var i = 0; i < bubbles.Length; i++)
+
+        Button flagButton = null!;
+        flagButton = MakeButton(T("Drapeaux : désactivés"), Purple, () =>
         {
-            var bubble = new Button { Text = "●", FontSize = 31,
-                TextColor = Color.FromArgb(colors[random.Next(colors.Length)]),
-                BackgroundColor = Colors.White, CornerRadius = 22 };
-            bubble.Clicked += (_, _) =>
-            {
-                if (!running) return;
-                taps++; score.Text = F($"{taps} bulles éclatées !", $"{taps} bubbles popped!", $"{taps} bubbels geprikt!"); bubble.Text = "✨";
-                Task.Delay(160).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(() => { if (running) bubble.Text = "●"; }));
-            };
-            bubbles[i] = bubble; grid.Add(bubble, i % 4, i / 4);
+            flagMode = !flagMode;
+            flagButton.Text = T(flagMode ? "Drapeaux : activés" : "Drapeaux : désactivés");
+            flagButton.BackgroundColor = flagMode ? Green : Purple;
+            status.Text = T(flagMode ? "Drapeaux : activés" : "Première case sûre. À toi de jouer !");
+        }, 50);
+
+        int NeighbourMines(int row, int column)
+        {
+            var count = 0;
+            for (var r = Math.Max(0, row - 1); r <= Math.Min(size - 1, row + 1); r++)
+                for (var c = Math.Max(0, column - 1); c <= Math.Min(size - 1, column + 1); c++)
+                    if ((r != row || c != column) && mines[r, c]) count++;
+            return count;
         }
-        body.Children.Add(timer); body.Children.Add(Panel(grid)); body.Children.Add(score);
+
+        void GenerateMines(int safeRow, int safeColumn)
+        {
+            var choices = new List<(int Row, int Column)>();
+            for (var row = 0; row < size; row++)
+                for (var column = 0; column < size; column++)
+                    if (Math.Abs(row - safeRow) > 1 || Math.Abs(column - safeColumn) > 1)
+                        choices.Add((row, column));
+            foreach (var choice in choices.OrderBy(_ => random.Next()).Take(mineTotal))
+                mines[choice.Row, choice.Column] = true;
+            generated = true;
+        }
+
+        void Reveal(int row, int column)
+        {
+            if (row < 0 || row >= size || column < 0 || column >= size || opened[row, column] || flagged[row, column] || mines[row, column]) return;
+            opened[row, column] = true;
+            openedCount++;
+            if (NeighbourMines(row, column) != 0) return;
+            for (var r = row - 1; r <= row + 1; r++)
+                for (var c = column - 1; c <= column + 1; c++)
+                    if (r != row || c != column) Reveal(r, c);
+        }
+
+        void RefreshBoard()
+        {
+            mineCounter.Text = (mineTotal - flagCount).ToString("000");
+            clock.Text = Math.Min(elapsed, 999).ToString("000");
+            for (var row = 0; row < size; row++)
+                for (var column = 0; column < size; column++)
+                {
+                    var cell = cells[row, column];
+                    cell.IsEnabled = !gameOver;
+                    cell.BackgroundColor = opened[row, column]
+                        ? Color.FromArgb("#E8E8E8")
+                        : Color.FromArgb("#C0C0C0");
+                    cell.Text = flagged[row, column] ? "🚩"
+                        : opened[row, column] && mines[row, column] ? "💣"
+                        : opened[row, column] && NeighbourMines(row, column) > 0 ? NeighbourMines(row, column).ToString()
+                        : "";
+                    cell.TextColor = opened[row, column] && !mines[row, column]
+                        ? NeighbourColor(NeighbourMines(row, column))
+                        : Ink;
+                    if (row == hitRow && column == hitColumn)
+                        cell.BackgroundColor = Color.FromArgb("#F28B82");
+                }
+        }
+
+        void Finish(bool won)
+        {
+            gameOver = true;
+            reset.Text = won ? "😎" : "😵";
+            if (won)
+            {
+                for (var row = 0; row < size; row++)
+                    for (var column = 0; column < size; column++)
+                        if (!mines[row, column] && !opened[row, column])
+                        {
+                            opened[row, column] = true;
+                            openedCount++;
+                        }
+                status.Text = T("Grille nettoyée ! +10 points 🎉");
+                AddPoints(10);
+            }
+            else
+                status.Text = T("Mines révélées ! Recommence pour tenter ta chance.");
+            RefreshBoard();
+        }
+
+        for (var row = 0; row < size; row++)
+            for (var column = 0; column < size; column++)
+            {
+                var cellRow = row;
+                var cellColumn = column;
+                var cell = new Button
+                {
+                    Text = "", FontSize = 16, FontAttributes = FontAttributes.Bold,
+                    Padding = 0, Margin = 0, CornerRadius = 3,
+                    BackgroundColor = Color.FromArgb("#C0C0C0"), TextColor = Ink
+                };
+                cell.Clicked += (_, _) =>
+                {
+                    if (gameOver) return;
+                    if (flagMode)
+                    {
+                        if (!opened[cellRow, cellColumn])
+                        {
+                            flagged[cellRow, cellColumn] = !flagged[cellRow, cellColumn];
+                            flagCount += flagged[cellRow, cellColumn] ? 1 : -1;
+                            RefreshBoard();
+                        }
+                        return;
+                    }
+
+                    if (flagged[cellRow, cellColumn] || opened[cellRow, cellColumn]) return;
+                    if (!generated) GenerateMines(cellRow, cellColumn);
+                    if (mines[cellRow, cellColumn])
+                    {
+                        hitRow = cellRow;
+                        hitColumn = cellColumn;
+                        for (var r = 0; r < size; r++)
+                            for (var c = 0; c < size; c++)
+                                if (mines[r, c]) opened[r, c] = true;
+                        Finish(false);
+                        return;
+                    }
+
+                    Reveal(cellRow, cellColumn);
+                    if (openedCount == size * size - mineTotal) Finish(true);
+                    else
+                    {
+                        status.Text = T("Première case sûre. À toi de jouer !");
+                        RefreshBoard();
+                    }
+                };
+                cells[row, column] = cell;
+                grid.Add(cell, column, row);
+            }
+
+        var boardPanel = Panel(new VerticalStackLayout
+        {
+            Spacing = 8,
+            Children =
+            {
+                header,
+                new Border
+                {
+                    BackgroundColor = Color.FromArgb("#808080"), StrokeThickness = 0,
+                    Padding = 4, Content = grid
+                }
+            }
+        }, Color.FromArgb("#C0C0C0"));
+        body.Children.Add(boardPanel);
+        body.Children.Add(flagButton);
+        body.Children.Add(status);
+        RefreshBoard();
+
         Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
         {
-            if (!running) return false;
-            seconds--; timer.Text = F($"{seconds} seconde{(seconds == 1 ? "" : "s")}", $"{seconds} second{(seconds == 1 ? "" : "s")}", $"{seconds} seconde{(seconds == 1 ? "" : "n")}");
-            if (seconds > 0) return true;
-            running = false; AddPoints(taps); score.Text = F($"Terminé ! {taps} bulles éclatées 🫧", $"Time's up! {taps} bubbles popped 🫧", $"Tijd is om! {taps} bubbels geprikt 🫧");
-            foreach (var bubble in bubbles) bubble.IsEnabled = false;
-            return false;
+            if (gameOver || !body.Children.Contains(boardPanel)) return false;
+            if (!generated) return true;
+            elapsed++;
+            clock.Text = Math.Min(elapsed, 999).ToString("000");
+            return !gameOver;
         });
     }
+
+    static Color NeighbourColor(int count) => count switch
+    {
+        1 => Color.FromArgb("#0000FF"),
+        2 => Color.FromArgb("#008000"),
+        3 => Color.FromArgb("#FF0000"),
+        4 => Color.FromArgb("#000080"),
+        5 => Color.FromArgb("#800000"),
+        6 => Color.FromArgb("#008080"),
+        _ => Color.FromArgb("#202020")
+    };
 
     void PlayCoin()
     {
