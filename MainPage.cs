@@ -447,29 +447,70 @@ public class MainPage : ContentPage
     void PlayDice()
     {
         StartPage("Lance le dé", "Lance le dé et essaie d’obtenir un six !");
-        var face = Text("🎲", 100, true);
-        var result = Text("À toi de jouer !", 20, true, Muted);
-        body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(10, 22), Children = { face, result } }, Color.FromArgb("#F1EEFF")));
-        body.Children.Add(MakeButton("Lancer le dé", Green, async () =>
+        var drawable = new Dice3DDrawable();
+        var die = new GraphicsView
         {
+            Drawable = drawable,
+            HeightRequest = 270,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center
+        };
+        var result = Text("À toi de jouer !", 20, true, Muted);
+        var rollButton = MakeButton("Lancer le dé", Green, () => { }, 58);
+        var rolling = false;
+        rollButton.Clicked += async (_, _) =>
+        {
+            if (rolling) return;
+            rolling = true;
+            rollButton.IsEnabled = false;
             result.Text = T("Ça tourne…");
-            face.Scale = 0.82;
-            for (var i = 0; i < 7; i++)
-            {
-                face.Text = new[] { "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }[random.Next(6)];
-                await face.RotateToAsync(face.Rotation + 100, 70, Easing.CubicInOut);
-                await face.ScaleToAsync(1.12, 45);
-                await face.ScaleToAsync(0.9, 45);
-                await Task.Delay(80);
-            }
+            var startPitch = drawable.Pitch;
+            var startYaw = drawable.Yaw;
+            var startRoll = drawable.Roll;
             var number = random.Next(1, 7);
-            face.Text = new[] { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }[number];
-            face.Rotation %= 360;
-            await face.RotateToAsync(0, 180, Easing.SpringOut);
-            await face.ScaleToAsync(1, 160, Easing.SpringOut);
+            const int frames = 64;
+            for (var frame = 0; frame <= frames; frame++)
+            {
+                var progress = frame / (float)frames;
+                var eased = 1 - MathF.Pow(1 - progress, 2.4f);
+                var momentum = MathF.Sin(progress * MathF.PI) * 0.55f;
+                drawable.Pitch = startPitch + (MathF.PI * 4.1f * eased) + momentum;
+                drawable.Yaw = startYaw + (MathF.PI * 6.2f * eased) - momentum * 0.7f;
+                drawable.Roll = startRoll + (MathF.PI * 3.8f * eased) + momentum * 0.45f;
+                die.Invalidate();
+                await Task.Delay(24);
+            }
+            var endPitch = drawable.Pitch;
+            var endYaw = drawable.Yaw;
+            var endRoll = drawable.Roll;
+            drawable.SetFaceToFront(number);
+            float NearestAngle(float target, float current) => target + MathF.Round((current - target) / (MathF.PI * 2)) * MathF.PI * 2;
+            var targetPitch = NearestAngle(drawable.Pitch, endPitch);
+            var targetYaw = NearestAngle(drawable.Yaw, endYaw);
+            var targetRoll = NearestAngle(drawable.Roll, endRoll);
+            for (var frame = 1; frame <= 12; frame++)
+            {
+                var t = frame / 12f;
+                var eased = 1 - MathF.Pow(1 - t, 3);
+                drawable.Pitch = endPitch + (targetPitch - endPitch) * eased;
+                drawable.Yaw = endYaw + (targetYaw - endYaw) * eased;
+                drawable.Roll = endRoll + (targetRoll - endRoll) * eased;
+                die.Invalidate();
+                await Task.Delay(18);
+            }
             result.Text = number == 6 ? T("Un six ! +3 points 🎉") : F($"Tu as obtenu {number}. Encore ?", $"You rolled {number}. Again?", $"Je gooide {number}. Nog een keer?");
             if (number == 6) AddPoints(3);
-        }));
+            rollButton.IsEnabled = true;
+            rolling = false;
+        };
+        body.Children.Add(Panel(new VerticalStackLayout
+        {
+            Spacing = 12,
+            Padding = new Thickness(10, 18),
+            Children = { die, result }
+        }, Color.FromArgb("#FFF0EE")));
+        body.Children.Add(rollButton);
+        die.Invalidate();
     }
 
     void PlayReflex()
