@@ -20,6 +20,10 @@ public class MainPage : ContentPage
         ["Pioche vide. Touche-la pour reprendre les cartes."] = ["Stock empty. Tap it to recycle the cards.", "Stapel leeg. Tik erop om de kaarten terug te nemen."],
         ["Choisis une carte, puis sa destination."] = ["Select a card, then its destination.", "Kies een kaart en daarna de bestemming."],
         ["Rangée vide"] = ["Empty column", "Lege kolom"],
+        ["SCORE"] = ["SCORE", "SCORE"], ["TEMPS"] = ["TIME", "TIJD"], ["COUPS"] = ["MOVES", "ZETTEN"],
+        ["Annuler"] = ["Undo", "Ongedaan maken"], ["Indice"] = ["Hint", "Hint"], ["Nouvelle partie"] = ["New game", "Nieuw spel"],
+        ["Tableau vert, une carte à la fois."] = ["Green felt, one card at a time.", "Groen speelkleed, één kaart tegelijk."],
+        ["Aucun coup évident. Pioche ou retourne une carte cachée."] = ["No obvious move. Draw or reveal a hidden card.", "Geen duidelijke zet. Trek een kaart of draai een verborgen kaart om."],
         ["Lance le dé"] = ["Roll the dice", "Gooi de dobbelsteen"], ["Un lancer porte-bonheur ?"] = ["A lucky roll?", "Een gelukkige worp?"],
         ["Réflexe"] = ["Reflex", "Reflex"], ["Attends le vert et appuie"] = ["Wait for green, then tap", "Wacht op groen en tik"],
         ["XP Minesweeper Classic"] = ["XP Minesweeper Classic", "XP Minesweeper Classic"],
@@ -59,11 +63,16 @@ public class MainPage : ContentPage
         public char Suit { get; } = suit;
         public bool FaceDown { get; set; }
     }
+    sealed record SolitaireSnapshot(
+        List<SolitaireCard> Stock, List<SolitaireCard> Waste,
+        List<SolitaireCard>[] Tableau, Dictionary<char, List<SolitaireCard>> Foundations,
+        int Score, int Moves);
     readonly VerticalStackLayout body = new() { Spacing = 16, Padding = new Thickness(20, 18, 20, 28) };
     readonly Random random = new();
     int points = Preferences.Default.Get("points", 0);
     bool running;
     bool armed;
+    bool solitaireActive;
     DateTime startAt;
 
     public MainPage(string language = "fr")
@@ -112,6 +121,11 @@ public class MainPage : ContentPage
     void ShowHome()
     {
         running = false;
+        solitaireActive = false;
+        BackgroundColor = Paper;
+        body.BackgroundColor = Colors.Transparent;
+        body.Spacing = 16;
+        body.Padding = new Thickness(20, 18, 20, 28);
         body.Children.Clear();
         var hero = new Border
         {
@@ -200,6 +214,11 @@ public class MainPage : ContentPage
     void StartPage(string title, string subtitle)
     {
         running = false;
+        solitaireActive = false;
+        BackgroundColor = Paper;
+        body.BackgroundColor = Colors.Transparent;
+        body.Spacing = 16;
+        body.Padding = new Thickness(20, 18, 20, 28);
         body.Children.Clear();
         var top = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) } };
         var back = new Button
@@ -399,7 +418,14 @@ public class MainPage : ContentPage
 
     void PlaySolitaire()
     {
-        StartPage("Solitaire", "Touche la pioche pour tirer. Range les cartes par couleur, de l’as au roi.");
+        running = false;
+        solitaireActive = false;
+        body.Children.Clear();
+        body.Spacing = 11;
+        body.Padding = new Thickness(12, 12, 12, 18);
+        BackgroundColor = Color.FromArgb("#0B5A3A");
+        body.BackgroundColor = Color.FromArgb("#0B5A3A");
+
         var suits = new[] { '♠', '♥', '♦', '♣' };
         var deck = (from suit in suits from rank in Enumerable.Range(1, 13) select new SolitaireCard(rank, suit))
             .OrderBy(_ => random.Next()).ToList();
@@ -408,11 +434,21 @@ public class MainPage : ContentPage
         var tableau = Enumerable.Range(0, 7).Select(_ => new List<SolitaireCard>()).ToArray();
         var foundations = suits.ToDictionary(suit => suit, _ => new List<SolitaireCard>());
         var moves = 0;
+        var score = 0;
+        var elapsedSeconds = 0;
         var source = SolitaireSource.None;
         var sourceColumn = -1;
         var sourceIndex = -1;
-        var status = Text("Choisis une carte, puis sa destination.", 14, true, Muted);
-        var moveCount = Text(F("Coups : 0", "Moves: 0", "Zetten: 0"), 15, true, Purple);
+        var undoStack = new Stack<SolitaireSnapshot>();
+        SolitaireCard? hintCard = null;
+        SolitaireCard? justMovedCard = null;
+        var hintTargetColumn = -1;
+        char? hintFoundationSuit = null;
+        var status = new Label
+        {
+            Text = T("Tableau vert, une carte à la fois."), FontSize = 13, TextColor = Color.FromArgb("#D7E8DE"),
+            HorizontalTextAlignment = TextAlignment.Center, HorizontalOptions = LayoutOptions.Fill
+        };
         var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill };
         for (var i = 0; i < 7; i++)
             tableauGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
@@ -429,52 +465,190 @@ public class MainPage : ContentPage
         }
         stock.AddRange(deck);
 
-        var topRow = new Grid { ColumnSpacing = 5, HeightRequest = 62 };
+        var scoreLabel = new Label { Text = "0", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
+        var timeLabel = new Label { Text = "00:00", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
+        var movesLabel = new Label { Text = "0", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
+        var header = new Grid { ColumnSpacing = 8, ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
+        var backButton = new Button { Text = "‹", FontSize = 30, Padding = 0, WidthRequest = 42, HeightRequest = 46,
+            BackgroundColor = Color.FromArgb("#124C35"), TextColor = Colors.White, CornerRadius = 16 };
+        backButton.Clicked += (_, _) => ShowHome();
+        var title = new Label { Text = "SOLITAIRE", FontSize = 19, FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Center, CharacterSpacing = 1.5 };
+        var restartTop = new Button { Text = "⟳", FontSize = 24, Padding = 0, WidthRequest = 42, HeightRequest = 46,
+            BackgroundColor = Color.FromArgb("#124C35"), TextColor = Colors.White, CornerRadius = 16 };
+        restartTop.Clicked += (_, _) => PlaySolitaire();
+        header.Add(backButton, 0, 0); header.Add(title, 1, 0); header.Add(restartTop, 2, 0);
+
+        Label StatName(string label) => new() { Text = T(label), FontSize = 10, FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#B8D5C4"), HorizontalTextAlignment = TextAlignment.Center };
+        Border Stat(string name, Label value) => new()
+        {
+            BackgroundColor = Color.FromArgb("#124C35"), StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 15 }, Padding = new Thickness(7, 6),
+            Content = new VerticalStackLayout { Spacing = 1, Children = { StatName(name), value } }
+        };
+        var stats = new Grid { ColumnSpacing = 8 };
+        for (var i = 0; i < 3; i++) stats.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        stats.Add(Stat("SCORE", scoreLabel), 0, 0);
+        stats.Add(Stat("TEMPS", timeLabel), 1, 0);
+        stats.Add(Stat("COUPS", movesLabel), 2, 0);
+
+        var topRow = new Grid { ColumnSpacing = 6, HeightRequest = 72 };
         for (var i = 0; i < 6; i++)
             topRow.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
-        var stockButton = new Button { FontSize = 17, Padding = 0, CornerRadius = 7, HeightRequest = 58,
-            BackgroundColor = Color.FromArgb("#715CE8"), TextColor = Colors.White };
-        var wasteButton = new Button { FontSize = 15, Padding = 0, CornerRadius = 7, HeightRequest = 58,
-            BackgroundColor = Colors.White, TextColor = Ink };
-        var foundationButtons = new Button[4];
-        stockButton.Clicked += (_, _) =>
+        Border Slot(char? suit, SolitaireCard? card, Action tap, bool highlighted = false)
         {
-            source = SolitaireSource.None;
+            var red = suit.HasValue && IsRedSuit(suit.Value);
+            View content = card is null
+                ? new Label { Text = suit?.ToString() ?? "·", FontSize = 25, FontAttributes = FontAttributes.Bold,
+                    TextColor = suit.HasValue ? (red ? Color.FromArgb("#73BCA0") : Color.FromArgb("#92C2AB")) : Colors.White,
+                    HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }
+                : CardFace(card, false, false);
+            var slot = new Border
+            {
+                WidthRequest = 46, HeightRequest = 66, Padding = 2,
+                BackgroundColor = card is null ? Color.FromArgb("#14563A") : Colors.White,
+                Stroke = highlighted ? Color.FromArgb("#FFE16A") : Color.FromArgb("#91B29D"),
+                StrokeThickness = highlighted ? 2.5 : 1.2,
+                StrokeShape = new RoundRectangle { CornerRadius = 8 },
+                Content = content
+            };
+            if (card is not null) slot.Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.42f };
+            var gesture = new TapGestureRecognizer(); gesture.Tapped += (_, _) => tap(); slot.GestureRecognizers.Add(gesture);
+            return slot;
+        }
+
+        var foundationSlots = new Border[4];
+        var wasteSlot = Slot(null, null, () => SelectWaste());
+        var stockSlot = Slot(null, null, () => DrawStock());
+        for (var i = 0; i < suits.Length; i++)
+        {
+            var suit = suits[i];
+            foundationSlots[i] = Slot(suit, null, () => MoveToFoundation(suit));
+            topRow.Add(foundationSlots[i], i, 0);
+        }
+        topRow.Add(wasteSlot, 4, 0); topRow.Add(stockSlot, 5, 0);
+
+        var actions = new Grid { ColumnSpacing = 7, Margin = new Thickness(0, 2, 0, 0) };
+        for (var i = 0; i < 3; i++) actions.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        Button ActionButton(string icon, string label, Color color, Action action)
+        {
+            var button = new Button { Text = $"{icon}\n{T(label)}", FontSize = 12, FontAttributes = FontAttributes.Bold,
+                HeightRequest = 66, Padding = new Thickness(2, 5), CornerRadius = 15,
+                BackgroundColor = color, TextColor = Colors.White };
+            button.Clicked += (_, _) => action();
+            return button;
+        }
+        actions.Add(ActionButton("↶", "Annuler", Color.FromArgb("#176847"), Undo), 0, 0);
+        actions.Add(ActionButton("✦", "Indice", Color.FromArgb("#176847"), ShowHint), 1, 0);
+        actions.Add(ActionButton("⟳", "Nouvelle partie", Color.FromArgb("#176847"), PlaySolitaire), 2, 0);
+
+        body.Children.Add(header);
+        body.Children.Add(stats);
+        body.Children.Add(topRow);
+        body.Children.Add(tableauGrid);
+        body.Children.Add(status);
+        body.Children.Add(actions);
+
+        void SaveUndo()
+        {
+            SolitaireCard Copy(SolitaireCard card) => new(card.Rank, card.Suit) { FaceDown = card.FaceDown };
+            undoStack.Push(new SolitaireSnapshot(
+                stock.Select(Copy).ToList(), waste.Select(Copy).ToList(),
+                tableau.Select(pile => pile.Select(Copy).ToList()).ToArray(),
+                foundations.ToDictionary(pair => pair.Key, pair => pair.Value.Select(Copy).ToList()), score, moves));
+        }
+
+        void Undo()
+        {
+            if (undoStack.Count == 0) { status.Text = T("Aucun coup à annuler."); return; }
+            var previous = undoStack.Pop();
+            stock.Clear(); stock.AddRange(previous.Stock);
+            waste.Clear(); waste.AddRange(previous.Waste);
+            for (var i = 0; i < tableau.Length; i++) { tableau[i].Clear(); tableau[i].AddRange(previous.Tableau[i]); }
+            foreach (var suit in suits) { foundations[suit].Clear(); foundations[suit].AddRange(previous.Foundations[suit]); }
+            score = previous.Score; moves = previous.Moves;
+            source = SolitaireSource.None; hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
+            solitaireActive = true; status.Text = T("Coup annulé."); Refresh();
+        }
+
+        bool CanPlaceOn(SolitaireCard card, List<SolitaireCard> pile) => pile.Count == 0
+            ? card.Rank == 13
+            : !pile[^1].FaceDown && pile[^1].Rank == card.Rank + 1 && IsRedSuit(pile[^1].Suit) != IsRedSuit(card.Suit);
+
+        void ShowHint()
+        {
+            hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
+            SolitaireCard? candidate = waste.Count > 0 ? waste[^1] : null;
+            if (candidate is not null && CanGoToFoundation(candidate))
+            {
+                hintCard = candidate; hintFoundationSuit = candidate.Suit;
+                status.Text = F($"Indice : place {CardLabel(candidate)} dans sa fondation.", $"Hint: move {CardLabel(candidate)} to its foundation.", $"Hint: verplaats {CardLabel(candidate)} naar de basisstapel.");
+                Refresh(); return;
+            }
+            for (var from = 0; from < tableau.Length; from++)
+            {
+                var pile = tableau[from];
+                for (var start = pile.FindIndex(card => !card.FaceDown); start >= 0 && start < pile.Count; start++)
+                {
+                    var card = pile[start];
+                    if (start == pile.Count - 1 && CanGoToFoundation(card))
+                    {
+                        hintCard = card; hintFoundationSuit = card.Suit;
+                        status.Text = F($"Indice : place {CardLabel(card)} dans sa fondation.", $"Hint: move {CardLabel(card)} to its foundation.", $"Hint: verplaats {CardLabel(card)} naar de basisstapel.");
+                        Refresh(); return;
+                    }
+                    for (var to = 0; to < tableau.Length; to++)
+                        if (to != from && CanPlaceOn(card, tableau[to]))
+                        {
+                            hintCard = card; hintTargetColumn = to;
+                            status.Text = F($"Indice : déplace {CardLabel(card)} vers la colonne {to + 1}.", $"Hint: move {CardLabel(card)} to column {to + 1}.", $"Hint: verplaats {CardLabel(card)} naar kolom {to + 1}.");
+                            Refresh(); return;
+                        }
+                }
+            }
+            if (candidate is not null)
+                for (var to = 0; to < tableau.Length; to++)
+                    if (CanPlaceOn(candidate, tableau[to]))
+                    {
+                        hintCard = candidate; hintTargetColumn = to;
+                        status.Text = F($"Indice : déplace {CardLabel(candidate)} vers la colonne {to + 1}.", $"Hint: move {CardLabel(candidate)} to column {to + 1}.", $"Hint: verplaats {CardLabel(candidate)} naar kolom {to + 1}.");
+                        Refresh(); return;
+                    }
+            status.Text = T("Aucun coup évident. Pioche ou retourne une carte cachée."); Refresh();
+        }
+
+        bool CanGoToFoundation(SolitaireCard card)
+        {
+            var pile = foundations[card.Suit];
+            return pile.Count == 0 ? card.Rank == 1 : card.Rank == pile[^1].Rank + 1;
+        }
+
+        void SelectWaste()
+        {
+            if (waste.Count == 0) return;
+            source = source == SolitaireSource.Waste ? SolitaireSource.None : SolitaireSource.Waste;
+            sourceColumn = -1; sourceIndex = waste.Count - 1;
+            hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
+            status.Text = T("Choisis une carte, puis sa destination."); Refresh();
+        }
+
+        void DrawStock()
+        {
+            source = SolitaireSource.None; hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
             if (stock.Count > 0)
             {
-                waste.Add(stock[^1]); stock.RemoveAt(stock.Count - 1); moves++;
-                status.Text = T("Choisis une carte, puis sa destination.");
+                SaveUndo(); waste.Add(stock[^1]); stock.RemoveAt(stock.Count - 1); moves++;
+                justMovedCard = waste[^1]; status.Text = T("Choisis une carte, puis sa destination.");
             }
             else if (waste.Count > 0)
             {
-                stock.AddRange(waste.AsEnumerable().Reverse()); waste.Clear(); moves++;
+                SaveUndo(); stock.AddRange(waste.AsEnumerable().Reverse()); waste.Clear(); moves++;
                 status.Text = T("Pioche vide. Touche-la pour reprendre les cartes.");
             }
             else status.Text = T("Pioche vide. Touche-la pour reprendre les cartes.");
             Refresh();
-        };
-        wasteButton.Clicked += (_, _) =>
-        {
-            if (waste.Count == 0) return;
-            if (source == SolitaireSource.Waste) source = SolitaireSource.None;
-            else { source = SolitaireSource.Waste; sourceColumn = -1; sourceIndex = waste.Count - 1; }
-            status.Text = T("Choisis une carte, puis sa destination.");
-            Refresh();
-        };
-        topRow.Add(stockButton, 0, 0); topRow.Add(wasteButton, 1, 0);
-        for (var i = 0; i < suits.Length; i++)
-        {
-            var suit = suits[i];
-            var button = new Button { FontSize = 17, Padding = 0, CornerRadius = 7, HeightRequest = 58,
-                BackgroundColor = Colors.White, TextColor = IsRedSuit(suit) ? Color.FromArgb("#D23A45") : Ink };
-            button.Clicked += (_, _) => MoveToFoundation(suit);
-            foundationButtons[i] = button;
-            topRow.Add(button, i + 2, 0);
         }
-
-        body.Children.Add(Panel(new VerticalStackLayout { Spacing = 8, Children = { topRow, moveCount } }, Color.FromArgb("#EAF3EA")));
-        body.Children.Add(tableauGrid);
-        body.Children.Add(status);
 
         void HandleTableauTap(int column, int cardIndex)
         {
@@ -483,7 +657,7 @@ public class MainPage : ContentPage
             {
                 if (source == SolitaireSource.Tableau && sourceColumn == column && sourceIndex == cardIndex)
                 {
-                    source = SolitaireSource.None; Refresh(); return;
+                    source = SolitaireSource.None; hintCard = null; Refresh(); return;
                 }
                 if (TryMoveToTableau(column)) return;
                 status.Text = T("Déplacement impossible.");
@@ -496,13 +670,14 @@ public class MainPage : ContentPage
             {
                 if (cardIndex == pile.Count - 1)
                 {
-                    tapped.FaceDown = false; moves++;
+                    SaveUndo(); tapped.FaceDown = false; moves++; score += 5; justMovedCard = tapped;
                     status.Text = T("Choisis une carte, puis sa destination.");
                     Refresh();
                 }
                 return;
             }
             source = SolitaireSource.Tableau; sourceColumn = column; sourceIndex = cardIndex;
+            hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
             status.Text = T("Choisis une carte, puis sa destination.");
             Refresh();
         }
@@ -519,12 +694,9 @@ public class MainPage : ContentPage
             if (moving.Count == 0) return false;
             var destination = tableau[targetColumn];
             var first = moving[0];
-            var canPlace = destination.Count == 0
-                ? first.Rank == 13
-                : !destination[^1].FaceDown && destination[^1].Rank == first.Rank + 1
-                    && IsRedSuit(destination[^1].Suit) != IsRedSuit(first.Suit);
-            if (!canPlace) return false;
+            if (!CanPlaceOn(first, destination)) return false;
 
+            SaveUndo();
             if (source == SolitaireSource.Waste) waste.RemoveAt(waste.Count - 1);
             else
             {
@@ -532,8 +704,9 @@ public class MainPage : ContentPage
                 if (tableau[sourceColumn].Count > 0 && tableau[sourceColumn][^1].FaceDown)
                     tableau[sourceColumn][^1].FaceDown = false;
             }
-            destination.AddRange(moving); moves++;
-            source = SolitaireSource.None; status.Text = T("Choisis une carte, puis sa destination.");
+            destination.AddRange(moving); moves++; score += 5; justMovedCard = moving[0];
+            source = SolitaireSource.None; hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
+            status.Text = T("Choisis une carte, puis sa destination.");
             Refresh(); return true;
         }
 
@@ -552,67 +725,130 @@ public class MainPage : ContentPage
             var canPlace = card.Suit == suit && (foundation.Count == 0 ? card.Rank == 1 : card.Rank == foundation[^1].Rank + 1);
             if (!canPlace) { status.Text = T("Déplacement impossible."); return; }
 
+            SaveUndo();
             sourcePile.RemoveAt(sourcePile.Count - 1);
-            foundation.Add(card); moves++;
+            foundation.Add(card); moves++; score += 10; justMovedCard = card;
             if (source == SolitaireSource.Tableau && sourcePile.Count > 0 && sourcePile[^1].FaceDown)
                 sourcePile[^1].FaceDown = false;
             source = SolitaireSource.None;
-            status.Text = foundations.Values.Sum(pile => pile.Count) == 52
-                ? T("Partie terminée ! Tu as gagné 🎉")
-                : T("Choisis une carte, puis sa destination.");
+            if (foundations.Values.Sum(pile => pile.Count) == 52)
+            {
+                score += 100;
+                status.Text = T("Partie terminée ! Tu as gagné 🎉"); solitaireActive = false;
+            }
+            else status.Text = T("Choisis une carte, puis sa destination.");
             Refresh();
         }
 
         void Refresh()
         {
-            stockButton.Text = stock.Count > 0 ? $"▧\n{stock.Count}" : waste.Count > 0 ? "↻" : "·";
-            wasteButton.Text = waste.Count == 0 ? "·" : CardLabel(waste[^1]);
-            wasteButton.BackgroundColor = source == SolitaireSource.Waste ? Color.FromArgb("#FFE69A") : Colors.White;
+            stockSlot.Content = stock.Count > 0 ? CardBack(stock.Count) : EmptyStock();
+            wasteSlot.Content = waste.Count == 0 ? new Label { Text = "·", FontSize = 25, TextColor = Color.FromArgb("#92C2AB"), HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }
+                : CardFace(waste[^1], source == SolitaireSource.Waste, ReferenceEquals(hintCard, waste[^1]));
+            wasteSlot.Stroke = source == SolitaireSource.Waste || ReferenceEquals(hintCard, waste.LastOrDefault()) ? Color.FromArgb("#FFE16A") : Color.FromArgb("#91B29D");
             for (var i = 0; i < suits.Length; i++)
             {
                 var pile = foundations[suits[i]];
-                foundationButtons[i].Text = pile.Count == 0 ? suits[i].ToString() : CardLabel(pile[^1]);
-                foundationButtons[i].TextColor = IsRedSuit(suits[i]) ? Color.FromArgb("#D23A45") : Ink;
+                foundationSlots[i].Content = pile.Count == 0
+                    ? new Label { Text = suits[i].ToString(), FontSize = 25, TextColor = IsRedSuit(suits[i]) ? Color.FromArgb("#73BCA0") : Color.FromArgb("#92C2AB"), HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }
+                    : CardFace(pile[^1], false, false);
+                foundationSlots[i].Stroke = hintFoundationSuit == suits[i] ? Color.FromArgb("#FFE16A") : Color.FromArgb("#91B29D");
             }
-            moveCount.Text = F($"Coups : {moves}", $"Moves: {moves}", $"Zetten: {moves}");
+            scoreLabel.Text = score.ToString(); movesLabel.Text = moves.ToString();
             tableauGrid.Children.Clear();
             for (var column = 0; column < tableau.Length; column++)
             {
                 var columnIndex = column;
-                var pileView = new VerticalStackLayout { Spacing = 3, HorizontalOptions = LayoutOptions.Fill };
+                var pileView = new AbsoluteLayout { HorizontalOptions = LayoutOptions.Fill };
                 if (tableau[column].Count == 0)
                 {
-                    var empty = MakeCardButton("K", Color.FromArgb("#E8ECE9"), Muted);
-                    empty.Clicked += (_, _) => HandleTableauTap(columnIndex, -1);
-                    pileView.Children.Add(empty);
+                    var empty = Slot(null, null, () => HandleTableauTap(columnIndex, -1), hintTargetColumn == columnIndex);
+                    AbsoluteLayout.SetLayoutBounds(empty, new Rect(0, 0, 1, 66));
+                    AbsoluteLayout.SetLayoutFlags(empty, AbsoluteLayoutFlags.WidthProportional);
+                    pileView.Children.Add(empty); pileView.HeightRequest = 66;
                 }
+                var y = 0d;
                 for (var i = 0; i < tableau[column].Count; i++)
                 {
                     var cardIndex = i;
                     var card = tableau[column][i];
                     var selected = source == SolitaireSource.Tableau && sourceColumn == column && cardIndex >= sourceIndex;
                     var faceDown = card.FaceDown;
-                    var cardButton = MakeCardButton(faceDown ? "▧" : CardLabel(card),
-                        faceDown ? Color.FromArgb("#715CE8") : selected ? Color.FromArgb("#FFE69A") : Colors.White,
-                        faceDown ? Colors.White : IsRedSuit(card.Suit) ? Color.FromArgb("#D23A45") : Ink);
-                    cardButton.HeightRequest = faceDown ? 35 : 46;
-                    cardButton.Clicked += (_, _) => HandleTableauTap(columnIndex, cardIndex);
-                    pileView.Children.Add(cardButton);
+                    var cardView = faceDown ? CardBack(null) : CardFace(card, selected, ReferenceEquals(hintCard, card));
+                    var cardHeight = faceDown ? 38 : 66;
+                    AbsoluteLayout.SetLayoutBounds(cardView, new Rect(0, y, 1, cardHeight));
+                    AbsoluteLayout.SetLayoutFlags(cardView, AbsoluteLayoutFlags.WidthProportional);
+                    var capturedIndex = cardIndex;
+                    var cardTap = new TapGestureRecognizer(); cardTap.Tapped += (_, _) => HandleTableauTap(columnIndex, capturedIndex); cardView.GestureRecognizers.Add(cardTap);
+                    if (!faceDown && cardIndex == tableau[column].Count - 1 && hintTargetColumn == columnIndex) cardView.Stroke = Color.FromArgb("#FFE16A");
+                    if (ReferenceEquals(card, justMovedCard))
+                    {
+                        cardView.Opacity = 0.5; cardView.Scale = 0.9;
+                        _ = cardView.FadeToAsync(1, 190); _ = cardView.ScaleToAsync(1, 210, Easing.SpringOut);
+                    }
+                    pileView.Children.Add(cardView);
+                    y += faceDown ? 15 : 27;
                 }
+                if (tableau[column].Count > 0) pileView.HeightRequest = y + 42;
                 tableauGrid.Add(pileView, column, 0);
             }
+            if (justMovedCard is not null) justMovedCard = null;
         }
 
+        View CardFace(SolitaireCard card, bool selected, bool hinted)
+        {
+            var red = IsRedSuit(card.Suit);
+            var ink = red ? Color.FromArgb("#D71931") : Color.FromArgb("#172126");
+            var face = new Grid { Padding = new Thickness(4, 3), RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
+            face.Add(new Label { Text = CardRank(card), FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = ink }, 0, 0);
+            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 29, FontAttributes = FontAttributes.Bold, TextColor = ink,
+                HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }, 0, 1);
+            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 10, TextColor = ink, HorizontalTextAlignment = TextAlignment.Right }, 0, 2);
+            var border = new Border { HeightRequest = 66, Padding = 0, BackgroundColor = Colors.White,
+                Stroke = hinted || selected ? Color.FromArgb("#FFE16A") : Color.FromArgb("#DCE4E0"), StrokeThickness = hinted || selected ? 2.5 : 1,
+                StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = face,
+                Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.42f } };
+            if (selected) border.TranslationY = -5;
+            return border;
+        }
+
+        View CardBack(int? count)
+        {
+            var inside = new Border { Margin = 3, Padding = 0, Stroke = Color.FromArgb("#F7DDE0"), StrokeThickness = 1,
+                StrokeShape = new RoundRectangle { CornerRadius = 5 },
+                Content = new Label { Text = "✥", FontSize = 23, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#FCE8E9"), HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center } };
+            var grid = new Grid { BackgroundColor = Color.FromArgb("#C9233C"), Children = { inside } };
+            if (count.HasValue) grid.Add(new Label { Text = count.Value.ToString(), FontSize = 10, FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White, BackgroundColor = Color.FromArgb("#A71930"), HorizontalTextAlignment = TextAlignment.Center,
+                VerticalTextAlignment = TextAlignment.Center, WidthRequest = 18, HeightRequest = 17, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.End }, 0, 0);
+            return new Border { WidthRequest = 46, HeightRequest = count.HasValue ? 66 : 38, Padding = 2,
+                BackgroundColor = Color.FromArgb("#B51F37"), Stroke = Colors.White, StrokeThickness = 1,
+                StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = grid,
+                Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.4f } };
+        }
+
+        View EmptyStock() => new Label { Text = "↻", FontSize = 23, TextColor = Colors.White,
+            HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center };
+
         Refresh();
+        solitaireActive = true;
+        Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
+        {
+            if (!solitaireActive || !body.Children.Contains(tableauGrid)) return false;
+            elapsedSeconds++;
+            timeLabel.Text = $"{elapsedSeconds / 60:00}:{elapsedSeconds % 60:00}";
+            return true;
+        });
     }
 
     static bool IsRedSuit(char suit) => suit is '♥' or '♦';
 
-    static string CardLabel(SolitaireCard card)
+    static string CardRank(SolitaireCard card) => card.Rank switch
     {
-        var rank = card.Rank switch { 1 => "A", 11 => "J", 12 => "Q", 13 => "K", _ => card.Rank.ToString() };
-        return rank + card.Suit;
-    }
+        1 => "A", 11 => "J", 12 => "Q", 13 => "K", _ => card.Rank.ToString()
+    };
+
+    static string CardLabel(SolitaireCard card) => CardRank(card) + card.Suit;
 
     static Button MakeCardButton(string label, Color background, Color textColor) => new()
     {
