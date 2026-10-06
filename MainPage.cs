@@ -274,7 +274,7 @@ public class MainPage : ContentPage
         body.Children.Add(hero);
         hero.Opacity = 0; hero.TranslationY = 8;
         _ = hero.FadeToAsync(1, 220);
-        _ = hero.TranslateToAsync(0, 0, 240, Easing.OutCubic);
+        _ = hero.TranslateToAsync(0, 0, 240, Easing.CubicOut);
     }
 
     void SelectLanguage() => Application.Current!.MainPage = new LanguageSelectionPage();
@@ -306,7 +306,7 @@ public class MainPage : ContentPage
             var index = i;
             var button = new Button { FontSize = 29, FontAttributes = FontAttributes.Bold, CornerRadius = 21,
                 Shadow = new Shadow { Brush = Color.FromArgb("#65715CE8"), Offset = new Point(0, 5), Radius = 9, Opacity = 0.36f } };
-            button.Clicked += (_, _) =>
+            button.Clicked += async (_, _) =>
             {
                 if (index == empty || !IsNeighbor(index, empty)) return;
                 (tiles[index], tiles[empty]) = (tiles[empty], tiles[index]);
