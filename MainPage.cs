@@ -13,7 +13,13 @@ public class MainPage : ContentPage
         ["Puzzle"] = ["Puzzle", "Puzzel"], ["Remets les tuiles en ordre"] = ["Put the tiles in order", "Zet de tegels op volgorde"],
         ["Objet manquant"] = ["Missing object", "Ontbrekend voorwerp"], ["Observe, puis retrouve-le"] = ["Look, then find what's missing", "Kijk goed en vind wat ontbreekt"],
         ["Paires"] = ["Matching pairs", "Paren"], ["Associe les images identiques"] = ["Match the identical pictures", "Zoek de gelijke plaatjes"],
-        ["Attrape les étoiles"] = ["Catch the stars", "Vang de sterren"], ["Tape vite avant la fin"] = ["Tap quickly before time runs out", "Tik snel voordat de tijd om is"],
+        ["Solitaire"] = ["Solitaire", "Patience"], ["Jeu de cartes classique"] = ["Classic card game", "Klassiek kaartspel"],
+        ["Touche la pioche pour tirer. Range les cartes par couleur, de l’as au roi."] = ["Tap the stock to draw. Build each suit from ace to king.", "Tik op de stapel om te trekken. Leg elke kleur van aas tot koning."],
+        ["Coups : 0"] = ["Moves: 0", "Zetten: 0"], ["Déplacement impossible."] = ["That move is not allowed.", "Deze zet is niet toegestaan."],
+        ["Partie terminée ! Tu as gagné 🎉"] = ["Game complete! You won 🎉", "Spel voltooid! Je hebt gewonnen 🎉"],
+        ["Pioche vide. Touche-la pour reprendre les cartes."] = ["Stock empty. Tap it to recycle the cards.", "Stapel leeg. Tik erop om de kaarten terug te nemen."],
+        ["Choisis une carte, puis sa destination."] = ["Select a card, then its destination.", "Kies een kaart en daarna de bestemming."],
+        ["Rangée vide"] = ["Empty column", "Lege kolom"],
         ["Lance le dé"] = ["Roll the dice", "Gooi de dobbelsteen"], ["Un lancer porte-bonheur ?"] = ["A lucky roll?", "Een gelukkige worp?"],
         ["Réflexe"] = ["Reflex", "Reflex"], ["Attends le vert et appuie"] = ["Wait for green, then tap", "Wacht op groen en tik"],
         ["XP Minesweeper Classic"] = ["XP Minesweeper Classic", "XP Minesweeper Classic"],
@@ -46,11 +52,16 @@ public class MainPage : ContentPage
     static readonly Color Paper = Color.FromArgb("#F7F6FC");
     static readonly Color Purple = Color.FromArgb("#715CE8");
     static readonly Color Green = Color.FromArgb("#31A98B");
+    enum SolitaireSource { None, Waste, Tableau }
+    sealed class SolitaireCard(int rank, char suit)
+    {
+        public int Rank { get; } = rank;
+        public char Suit { get; } = suit;
+        public bool FaceDown { get; set; }
+    }
     readonly VerticalStackLayout body = new() { Spacing = 16, Padding = new Thickness(20, 18, 20, 28) };
     readonly Random random = new();
     int points = Preferences.Default.Get("points", 0);
-    int taps;
-    int seconds;
     bool running;
     bool armed;
     DateTime startAt;
@@ -138,7 +149,7 @@ public class MainPage : ContentPage
             ("🧩", "Puzzle", "Remets les tuiles en ordre", "#EEEAFE", PlayPuzzle),
             ("👀", "Objet manquant", "Observe, puis retrouve-le", "#E4F5F1", PlayMissingObject),
             ("🃏", "Paires", "Associe les images identiques", "#FFF0E4", PlayPairs),
-            ("🎯", "Attrape les étoiles", "Tape vite avant la fin", "#FFF7D9", PlayStars),
+            ("🃏", "Solitaire", "Jeu de cartes classique", "#FFF7D9", PlaySolitaire),
             ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", PlayDice),
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", PlayReflex),
             ("💣", "XP Minesweeper Classic", "Trouve les cases sûres", "#E8EEF5", PlayMinesweeper),
@@ -386,63 +397,229 @@ public class MainPage : ContentPage
         body.Children.Add(MakeButton("Nouvelle partie", Purple, PlayPairs));
     }
 
-    void PlayStars()
+    void PlaySolitaire()
     {
-        StartPage("Attrape les étoiles", "Tape la case avec l’étoile avant la fin du chrono !");
-        taps = 0; seconds = 20; running = true;
-        var timer = Text(F("20 secondes", "20 seconds", "20 seconden"), 17, true, Muted);
-        var score = Text(F("0 étoile", "0 stars", "0 sterren"), 20, true);
-        var grid = new Grid { RowSpacing = 8, ColumnSpacing = 8, HeightRequest = 300 };
-        for (var i = 0; i < 3; i++)
+        StartPage("Solitaire", "Touche la pioche pour tirer. Range les cartes par couleur, de l’as au roi.");
+        var suits = new[] { '♠', '♥', '♦', '♣' };
+        var deck = (from suit in suits from rank in Enumerable.Range(1, 13) select new SolitaireCard(rank, suit))
+            .OrderBy(_ => random.Next()).ToList();
+        var stock = new List<SolitaireCard>();
+        var waste = new List<SolitaireCard>();
+        var tableau = Enumerable.Range(0, 7).Select(_ => new List<SolitaireCard>()).ToArray();
+        var foundations = suits.ToDictionary(suit => suit, _ => new List<SolitaireCard>());
+        var moves = 0;
+        var source = SolitaireSource.None;
+        var sourceColumn = -1;
+        var sourceIndex = -1;
+        var status = Text("Choisis une carte, puis sa destination.", 14, true, Muted);
+        var moveCount = Text(F("Coups : 0", "Moves: 0", "Zetten: 0"), 15, true, Purple);
+
+        for (var column = 0; column < 7; column++)
         {
-            grid.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
-            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
-        }
-        var cells = new Button[9];
-        var starCell = random.Next(9);
-        for (var i = 0; i < 9; i++)
-        {
-            var cellIndex = i;
-            var cell = new Button { Text = i == starCell ? "⭐" : "·", FontSize = 34,
-                BackgroundColor = i == starCell ? Color.FromArgb("#EEEAFE") : Colors.White,
-                TextColor = Purple, CornerRadius = 18,
-                Shadow = new Shadow { Brush = Color.FromArgb("#66715CE8"), Offset = new Point(0, 4), Radius = 6, Opacity = 0.26f } };
-            cell.Clicked += async (_, _) =>
+            for (var row = 0; row <= column; row++)
             {
-                if (!running || cellIndex != starCell) return;
-                taps++; score.Text = F($"{taps} étoile{(taps == 1 ? "" : "s")} !", $"{taps} star{(taps == 1 ? "" : "s")}!", $"{taps} ster{(taps == 1 ? "" : "ren")}!");
-                var previous = starCell;
-                do starCell = random.Next(9); while (starCell == previous);
-                for (var j = 0; j < cells.Length; j++)
-                {
-                    cells[j].Text = j == starCell ? "⭐" : "·";
-                    cells[j].BackgroundColor = j == starCell ? Color.FromArgb("#EEEAFE") : Colors.White;
-                }
-                await cells[starCell].ScaleToAsync(1.22, 100);
-                await cells[starCell].ScaleToAsync(1.0, 180);
-            };
-            cells[i] = cell; grid.Add(cell, i % 3, i / 3);
-        }
-        _ = PulseStar();
-        async Task PulseStar()
-        {
-            while (running)
-            {
-                await cells[starCell].ScaleToAsync(1.16, 400, Easing.SinInOut);
-                await cells[starCell].ScaleToAsync(1.0, 400, Easing.SinInOut);
+                var card = deck[0];
+                deck.RemoveAt(0);
+                card.FaceDown = row != column;
+                tableau[column].Add(card);
             }
         }
-        body.Children.Add(timer); body.Children.Add(Panel(grid)); body.Children.Add(score);
-        Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
+        stock.AddRange(deck);
+
+        var topRow = new Grid { ColumnSpacing = 5, HeightRequest = 62 };
+        for (var i = 0; i < 6; i++)
+            topRow.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        var stockButton = new Button { FontSize = 17, Padding = 0, CornerRadius = 7, HeightRequest = 58,
+            BackgroundColor = Color.FromArgb("#715CE8"), TextColor = Colors.White };
+        var wasteButton = new Button { FontSize = 15, Padding = 0, CornerRadius = 7, HeightRequest = 58,
+            BackgroundColor = Colors.White, TextColor = Ink };
+        var foundationButtons = new Button[4];
+        stockButton.Clicked += (_, _) =>
         {
-            if (!running) return false;
-            seconds--; timer.Text = F($"{seconds} seconde{(seconds == 1 ? "" : "s")}", $"{seconds} second{(seconds == 1 ? "" : "s")}", $"{seconds} seconde{(seconds == 1 ? "" : "n")}");
-            if (seconds > 0) return true;
-            running = false; AddPoints(taps); score.Text = F($"Terminé ! {taps} étoiles attrapées 🎉", $"Time's up! You caught {taps} stars 🎉", $"Tijd is om! Je ving {taps} sterren 🎉");
-            foreach (var cell in cells) cell.IsEnabled = false;
-            return false;
-        });
+            source = SolitaireSource.None;
+            if (stock.Count > 0)
+            {
+                waste.Add(stock[^1]); stock.RemoveAt(stock.Count - 1); moves++;
+                status.Text = T("Choisis une carte, puis sa destination.");
+            }
+            else if (waste.Count > 0)
+            {
+                stock.AddRange(waste.AsEnumerable().Reverse()); waste.Clear(); moves++;
+                status.Text = T("Pioche vide. Touche-la pour reprendre les cartes.");
+            }
+            else status.Text = T("Pioche vide. Touche-la pour reprendre les cartes.");
+            Refresh();
+        };
+        wasteButton.Clicked += (_, _) =>
+        {
+            if (waste.Count == 0) return;
+            if (source == SolitaireSource.Waste) source = SolitaireSource.None;
+            else { source = SolitaireSource.Waste; sourceColumn = -1; sourceIndex = waste.Count - 1; }
+            status.Text = T("Choisis une carte, puis sa destination.");
+            Refresh();
+        };
+        topRow.Add(stockButton, 0, 0); topRow.Add(wasteButton, 1, 0);
+        for (var i = 0; i < suits.Length; i++)
+        {
+            var suit = suits[i];
+            var button = new Button { FontSize = 17, Padding = 0, CornerRadius = 7, HeightRequest = 58,
+                BackgroundColor = Colors.White, TextColor = IsRedSuit(suit) ? Color.FromArgb("#D23A45") : Ink };
+            button.Clicked += (_, _) => MoveToFoundation(suit);
+            foundationButtons[i] = button;
+            topRow.Add(button, i + 2, 0);
+        }
+
+        var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill };
+        for (var i = 0; i < 7; i++)
+            tableauGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        body.Children.Add(Panel(new VerticalStackLayout { Spacing = 8, Children = { topRow, moveCount } }, Color.FromArgb("#EAF3EA")));
+        body.Children.Add(tableauGrid);
+        body.Children.Add(status);
+
+        void HandleTableauTap(int column, int cardIndex)
+        {
+            var pile = tableau[column];
+            if (source != SolitaireSource.None)
+            {
+                if (source == SolitaireSource.Tableau && sourceColumn == column && sourceIndex == cardIndex)
+                {
+                    source = SolitaireSource.None; Refresh(); return;
+                }
+                if (TryMoveToTableau(column)) return;
+                status.Text = T("Déplacement impossible.");
+                return;
+            }
+
+            if (cardIndex < 0) return;
+            var tapped = pile[cardIndex];
+            if (tapped.FaceDown)
+            {
+                if (cardIndex == pile.Count - 1)
+                {
+                    tapped.FaceDown = false; moves++;
+                    status.Text = T("Choisis une carte, puis sa destination.");
+                    Refresh();
+                }
+                return;
+            }
+            source = SolitaireSource.Tableau; sourceColumn = column; sourceIndex = cardIndex;
+            status.Text = T("Choisis une carte, puis sa destination.");
+            Refresh();
+        }
+
+        bool TryMoveToTableau(int targetColumn)
+        {
+            List<SolitaireCard> moving;
+            if (source == SolitaireSource.Waste)
+                moving = waste.Count == 0 ? new List<SolitaireCard>() : new List<SolitaireCard> { waste[^1] };
+            else if (source == SolitaireSource.Tableau && sourceColumn >= 0 && sourceIndex >= 0)
+                moving = tableau[sourceColumn].Skip(sourceIndex).ToList();
+            else return false;
+
+            if (moving.Count == 0) return false;
+            var destination = tableau[targetColumn];
+            var first = moving[0];
+            var canPlace = destination.Count == 0
+                ? first.Rank == 13
+                : !destination[^1].FaceDown && destination[^1].Rank == first.Rank + 1
+                    && IsRedSuit(destination[^1].Suit) != IsRedSuit(first.Suit);
+            if (!canPlace) return false;
+
+            if (source == SolitaireSource.Waste) waste.RemoveAt(waste.Count - 1);
+            else
+            {
+                tableau[sourceColumn].RemoveRange(sourceIndex, moving.Count);
+                if (tableau[sourceColumn].Count > 0 && tableau[sourceColumn][^1].FaceDown)
+                    tableau[sourceColumn][^1].FaceDown = false;
+            }
+            destination.AddRange(moving); moves++;
+            source = SolitaireSource.None; status.Text = T("Choisis une carte, puis sa destination.");
+            Refresh(); return true;
+        }
+
+        void MoveToFoundation(char suit)
+        {
+            if (source == SolitaireSource.None) return;
+            List<SolitaireCard> sourcePile;
+            if (source == SolitaireSource.Waste) sourcePile = waste;
+            else if (source == SolitaireSource.Tableau && sourceIndex == tableau[sourceColumn].Count - 1)
+                sourcePile = tableau[sourceColumn];
+            else { status.Text = T("Déplacement impossible."); return; }
+
+            if (sourcePile.Count == 0) return;
+            var card = sourcePile[^1];
+            var foundation = foundations[suit];
+            var canPlace = card.Suit == suit && (foundation.Count == 0 ? card.Rank == 1 : card.Rank == foundation[^1].Rank + 1);
+            if (!canPlace) { status.Text = T("Déplacement impossible."); return; }
+
+            sourcePile.RemoveAt(sourcePile.Count - 1);
+            foundation.Add(card); moves++;
+            if (source == SolitaireSource.Tableau && sourcePile.Count > 0 && sourcePile[^1].FaceDown)
+                sourcePile[^1].FaceDown = false;
+            source = SolitaireSource.None;
+            status.Text = foundations.Values.Sum(pile => pile.Count) == 52
+                ? T("Partie terminée ! Tu as gagné 🎉")
+                : T("Choisis une carte, puis sa destination.");
+            Refresh();
+        }
+
+        void Refresh()
+        {
+            stockButton.Text = stock.Count > 0 ? $"▧\n{stock.Count}" : waste.Count > 0 ? "↻" : "·";
+            wasteButton.Text = waste.Count == 0 ? "·" : CardLabel(waste[^1]);
+            wasteButton.BackgroundColor = source == SolitaireSource.Waste ? Color.FromArgb("#FFE69A") : Colors.White;
+            for (var i = 0; i < suits.Length; i++)
+            {
+                var pile = foundations[suits[i]];
+                foundationButtons[i].Text = pile.Count == 0 ? suits[i].ToString() : CardLabel(pile[^1]);
+                foundationButtons[i].TextColor = IsRedSuit(suits[i]) ? Color.FromArgb("#D23A45") : Ink;
+            }
+            moveCount.Text = F($"Coups : {moves}", $"Moves: {moves}", $"Zetten: {moves}");
+            tableauGrid.Children.Clear();
+            for (var column = 0; column < tableau.Length; column++)
+            {
+                var columnIndex = column;
+                var pileView = new VerticalStackLayout { Spacing = 3, HorizontalOptions = LayoutOptions.Fill };
+                if (tableau[column].Count == 0)
+                {
+                    var empty = MakeCardButton("K", Color.FromArgb("#E8ECE9"), Muted);
+                    empty.Clicked += (_, _) => HandleTableauTap(columnIndex, -1);
+                    pileView.Children.Add(empty);
+                }
+                for (var i = 0; i < tableau[column].Count; i++)
+                {
+                    var cardIndex = i;
+                    var card = tableau[column][i];
+                    var selected = source == SolitaireSource.Tableau && sourceColumn == column && cardIndex >= sourceIndex;
+                    var faceDown = card.FaceDown;
+                    var cardButton = MakeCardButton(faceDown ? "▧" : CardLabel(card),
+                        faceDown ? Color.FromArgb("#715CE8") : selected ? Color.FromArgb("#FFE69A") : Colors.White,
+                        faceDown ? Colors.White : IsRedSuit(card.Suit) ? Color.FromArgb("#D23A45") : Ink);
+                    cardButton.HeightRequest = faceDown ? 35 : 46;
+                    cardButton.Clicked += (_, _) => HandleTableauTap(columnIndex, cardIndex);
+                    pileView.Children.Add(cardButton);
+                }
+                tableauGrid.Add(pileView, column, 0);
+            }
+        }
+
+        Refresh();
     }
+
+    static bool IsRedSuit(char suit) => suit is '♥' or '♦';
+
+    static string CardLabel(SolitaireCard card)
+    {
+        var rank = card.Rank switch { 1 => "A", 11 => "J", 12 => "Q", 13 => "K", _ => card.Rank.ToString() };
+        return rank + card.Suit;
+    }
+
+    static Button MakeCardButton(string label, Color background, Color textColor) => new()
+    {
+        Text = label, FontSize = 13, FontAttributes = FontAttributes.Bold,
+        Padding = 0, Margin = 0, CornerRadius = 5, HeightRequest = 46,
+        BackgroundColor = background, TextColor = textColor
+    };
 
     void PlayDice()
     {
