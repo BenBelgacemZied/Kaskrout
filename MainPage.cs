@@ -230,7 +230,8 @@ public class MainPage : ContentPage
         for (var i = 0; i < 9; i++)
         {
             var index = i;
-            var button = new Button { FontSize = 28, FontAttributes = FontAttributes.Bold, CornerRadius = 17 };
+            var button = new Button { FontSize = 28, FontAttributes = FontAttributes.Bold, CornerRadius = 17,
+                Shadow = new Shadow { Brush = Color.FromArgb("#90715CE8"), Offset = new Point(0, 5), Radius = 7, Opacity = 0.32 } };
             button.Clicked += (_, _) =>
             {
                 if (index == empty || !IsNeighbor(index, empty)) return;
@@ -355,11 +356,14 @@ public class MainPage : ContentPage
         {
             var index = i;
             var card = new Button { Text = "?", FontSize = 28, FontAttributes = FontAttributes.Bold,
-                BackgroundColor = Color.FromArgb("#EEEAFE"), TextColor = Purple, CornerRadius = 17 };
+                BackgroundColor = Color.FromArgb("#EEEAFE"), TextColor = Purple, CornerRadius = 17,
+                Shadow = new Shadow { Brush = Color.FromArgb("#90715CE8"), Offset = new Point(0, 5), Radius = 7, Opacity = 0.3 } };
             card.Clicked += async (_, _) =>
             {
                 if (busy || matched.Contains(index) || open.Contains(index)) return;
+                await card.RotateYTo(90, 90);
                 card.Text = symbols[index]; open.Add(index);
+                await card.RotateYTo(0, 100);
                 if (open.Count < 2) return;
                 busy = true;
                 await Task.Delay(650);
@@ -401,8 +405,9 @@ public class MainPage : ContentPage
             var cellIndex = i;
             var cell = new Button { Text = i == starCell ? "⭐" : "·", FontSize = 34,
                 BackgroundColor = i == starCell ? Color.FromArgb("#EEEAFE") : Colors.White,
-                TextColor = Purple, CornerRadius = 18 };
-            cell.Clicked += (_, _) =>
+                TextColor = Purple, CornerRadius = 18,
+                Shadow = new Shadow { Brush = Color.FromArgb("#66715CE8"), Offset = new Point(0, 4), Radius = 6, Opacity = 0.26 } };
+            cell.Clicked += async (_, _) =>
             {
                 if (!running || cellIndex != starCell) return;
                 taps++; score.Text = F($"{taps} étoile{(taps == 1 ? "" : "s")} !", $"{taps} star{(taps == 1 ? "" : "s")}!", $"{taps} ster{(taps == 1 ? "" : "ren")}!");
@@ -413,8 +418,19 @@ public class MainPage : ContentPage
                     cells[j].Text = j == starCell ? "⭐" : "·";
                     cells[j].BackgroundColor = j == starCell ? Color.FromArgb("#EEEAFE") : Colors.White;
                 }
+                await cells[starCell].ScaleTo(1.22, 100);
+                await cells[starCell].ScaleTo(1.0, 180);
             };
             cells[i] = cell; grid.Add(cell, i % 3, i / 3);
+        }
+        _ = PulseStar();
+        async Task PulseStar()
+        {
+            while (running)
+            {
+                await cells[starCell].ScaleTo(1.16, 400, Easing.SinInOut);
+                await cells[starCell].ScaleTo(1.0, 400, Easing.SinInOut);
+            }
         }
         body.Children.Add(timer); body.Children.Add(Panel(grid)); body.Children.Add(score);
         Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
@@ -437,13 +453,20 @@ public class MainPage : ContentPage
         body.Children.Add(MakeButton("Lancer le dé", Green, async () =>
         {
             result.Text = T("Ça tourne…");
+            face.Scale = 0.82;
             for (var i = 0; i < 7; i++)
             {
                 face.Text = new[] { "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }[random.Next(6)];
+                await face.RotateTo(face.Rotation + 100, 70, Easing.CubicInOut);
+                await face.ScaleTo(1.12, 45);
+                await face.ScaleTo(0.9, 45);
                 await Task.Delay(80);
             }
             var number = random.Next(1, 7);
             face.Text = new[] { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }[number];
+            face.Rotation %= 360;
+            await face.RotateTo(0, 180, Easing.SpringOut);
+            await face.ScaleTo(1, 160, Easing.SpringOut);
             result.Text = number == 6 ? T("Un six ! +3 points 🎉") : F($"Tu as obtenu {number}. Encore ?", $"You rolled {number}. Again?", $"Je gooide {number}. Nog een keer?");
             if (number == 6) AddPoints(3);
         }));
