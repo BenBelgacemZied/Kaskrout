@@ -28,6 +28,8 @@ public class MainPage : ContentPage
         ["Lance le dé"] = ["Roll the dice", "Gooi de dobbelsteen"], ["Un lancer porte-bonheur ?"] = ["A lucky roll?", "Een gelukkige worp?"],
         ["Réflexe"] = ["Reflex", "Reflex"], ["Attends le vert et appuie"] = ["Wait for green, then tap", "Wacht op groen en tik"],
         ["XP Minesweeper Classic"] = ["XP Minesweeper Classic", "XP Minesweeper Classic"],
+        ["Démineur"] = ["Minesweeper", "Mijnenveger"], ["Repère les cases sûres"] = ["Spot the safe squares", "Zoek de veilige vakjes"],
+        ["Repère les cases sûres et évite les mines."] = ["Find the safe squares and avoid the mines.", "Zoek de veilige vakjes en vermijd de mijnen."],
         ["Trouve les cases sûres"] = ["Find the safe squares", "Vind de veilige vakjes"],
         ["Découvre toutes les cases sans mine. Active le mode drapeau pour signaler un danger."] = ["Reveal every square without a mine. Turn on flag mode to mark a danger.", "Onthul alle vakjes zonder mijn. Zet de vlagmodus aan om gevaar aan te geven."],
         ["Drapeaux : désactivés"] = ["Flags: off", "Vlaggen: uit"], ["Drapeaux : activés"] = ["Flags: on", "Vlaggen: aan"],
@@ -167,7 +169,7 @@ public class MainPage : ContentPage
             ("🃏", "Solitaire", "Jeu de cartes classique", "#FFF7D9", PlaySolitaire),
             ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", PlayDice),
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", PlayReflex),
-            ("💣", "XP Minesweeper Classic", "Trouve les cases sûres", "#E8EEF5", PlayMinesweeper),
+            ("💎", "Démineur", "Repère les cases sûres", "#E8EEF5", PlayMinesweeper),
             ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", PlayCoin),
             ("🎰", "Machine surprise", "Quel emoji va sortir ?", "#FCE8F4", PlaySurprise)
         };
@@ -205,7 +207,13 @@ public class MainPage : ContentPage
                     }
                 }
             };
-            var tap = new TapGestureRecognizer { Command = new Command(game.Play) };
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += async (_, _) =>
+            {
+                await card.ScaleToAsync(0.96, 70);
+                await card.ScaleToAsync(1, 110, Easing.SpringOut);
+                game.Play();
+            };
             card.GestureRecognizers.Add(tap);
             grid.Add(card, i % 2, i / 2);
         }
@@ -221,17 +229,52 @@ public class MainPage : ContentPage
         body.Spacing = 16;
         body.Padding = new Thickness(20, 18, 20, 28);
         body.Children.Clear();
-        var top = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) } };
+        var top = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
         var back = new Button
         {
-            Text = "‹", FontSize = 32, TextColor = Purple, BackgroundColor = Colors.White,
-            CornerRadius = 18, WidthRequest = 48, HeightRequest = 48, Padding = 0
+            Text = "←", FontSize = 22, TextColor = Purple, BackgroundColor = Colors.White,
+            CornerRadius = 17, WidthRequest = 48, HeightRequest = 48, Padding = 0,
+            Shadow = new Shadow { Brush = Color.FromArgb("#25715CE8"), Offset = new Point(0, 3), Radius = 7, Opacity = 0.35f }
         };
         back.Clicked += (_, _) => ShowHome();
         top.Add(back, 0, 0);
-        top.Add(Text(title, 23, true), 1, 0);
+        top.Add(Text("KASKROUT", 12, true, Muted), 1, 0);
+        var badge = new Border { BackgroundColor = Color.FromArgb("#E6F5F0"), StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 14 }, Padding = new Thickness(10, 5),
+            Content = Text("JEU", 10, true, Green) };
+        top.Add(badge, 2, 0);
         body.Children.Add(top);
-        body.Children.Add(Text(subtitle, 15, false, Muted));
+        var icon = title switch
+        {
+            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏",
+            "Lance le dé" => "🎲", "Réflexe" => "⚡", "Démineur" => "💎",
+            "Pile ou face" => "🪙", "Machine surprise" => "🎁", _ => "✨"
+        };
+        var heroGrid = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) },
+            ColumnSpacing = 14
+        };
+        heroGrid.Add(new Border { WidthRequest = 62, HeightRequest = 62, BackgroundColor = Colors.White,
+            StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 21 }, Content = Text(icon, 34) }, 0, 0);
+        heroGrid.Add(new VerticalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center,
+            Children = { Text(title, 22, true, Ink), Text(subtitle, 13, false, Muted) } }, 1, 0);
+        var hero = new Border
+        {
+            Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
+                GradientStops = { new GradientStop(Color.FromArgb("#F0ECFF"), 0), new GradientStop(Color.FromArgb("#E3F5F1"), 1) }
+            },
+            StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 26 },
+            Padding = new Thickness(17, 15),
+            Shadow = new Shadow { Brush = Color.FromArgb("#28715CE8"), Offset = new Point(0, 5), Radius = 12, Opacity = 0.24f },
+            Content = heroGrid
+        };
+        body.Children.Add(hero);
+        hero.Opacity = 0; hero.TranslationY = 8;
+        _ = hero.FadeToAsync(1, 220);
+        _ = hero.TranslateToAsync(0, 0, 240, Easing.OutCubic);
     }
 
     void SelectLanguage() => Application.Current!.MainPage = new LanguageSelectionPage();
@@ -261,13 +304,15 @@ public class MainPage : ContentPage
         for (var i = 0; i < 9; i++)
         {
             var index = i;
-            var button = new Button { FontSize = 28, FontAttributes = FontAttributes.Bold, CornerRadius = 17,
-                Shadow = new Shadow { Brush = Color.FromArgb("#90715CE8"), Offset = new Point(0, 5), Radius = 7, Opacity = 0.32f } };
+            var button = new Button { FontSize = 29, FontAttributes = FontAttributes.Bold, CornerRadius = 21,
+                Shadow = new Shadow { Brush = Color.FromArgb("#65715CE8"), Offset = new Point(0, 5), Radius = 9, Opacity = 0.36f } };
             button.Clicked += (_, _) =>
             {
                 if (index == empty || !IsNeighbor(index, empty)) return;
                 (tiles[index], tiles[empty]) = (tiles[empty], tiles[index]);
                 empty = index; moves++; status.Text = F($"Coups : {moves}", $"Moves: {moves}", $"Zetten: {moves}");
+                await button.ScaleToAsync(0.92, 65);
+                await button.ScaleToAsync(1, 150, Easing.SpringOut);
                 RefreshTiles();
                 if (tiles.SequenceEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 0 }))
                 {
@@ -284,8 +329,11 @@ public class MainPage : ContentPage
             for (var i = 0; i < tiles.Count; i++)
             {
                 buttons[i].Text = tiles[i] == 0 ? "" : tiles[i].ToString();
-                buttons[i].BackgroundColor = tiles[i] == 0 ? Color.FromArgb("#F1EFF8") : Color.FromArgb("#EEEAFE");
-                buttons[i].TextColor = Purple;
+                buttons[i].BackgroundColor = tiles[i] == 0 ? Color.FromArgb("#E4F5F1") : (i % 3) switch
+                {
+                    0 => Color.FromArgb("#EEEAFE"), 1 => Color.FromArgb("#E5F2FF"), _ => Color.FromArgb("#FFF0E4")
+                };
+                buttons[i].TextColor = i % 3 == 1 ? Color.FromArgb("#3475C5") : Purple;
             }
         }
         // Mélange par mouvements légaux : le puzzle reste toujours résoluble.
@@ -338,9 +386,16 @@ public class MainPage : ContentPage
             var missing = items[random.Next(items.Length)];
             var visible = Text(string.Join("   ", items), 31);
             var question = Text("Mémorise bien…", 16, true, Purple);
-            var panel = Panel(new VerticalStackLayout { Spacing = 14, Children = { visible, question } });
-            roundArea.Children.Add(panel);
-            var optionsArea = new VerticalStackLayout { Spacing = 9 };
+        var panel = Panel(new VerticalStackLayout { Spacing = 14, Children = { visible, question } });
+        roundArea.Children.Add(panel);
+        panel.Scale = 0.96;
+        _ = panel.ScaleToAsync(1, 220, Easing.SpringOut);
+            var optionsArea = new Grid { RowSpacing = 9, ColumnSpacing = 9 };
+            for (var i = 0; i < 2; i++)
+            {
+                optionsArea.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+                optionsArea.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
+            }
             roundArea.Children.Add(optionsArea);
             Task.Delay(1800).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -349,9 +404,10 @@ public class MainPage : ContentPage
                 question.Text = T("Lequel a disparu ?");
                 var decoys = new[] { "🍋", "🛴", "🐶", "🎁", "☀️", "🍪", "🚕", "🐻", "🎾", "🍇" }
                     .Where(x => !items.Contains(x)).OrderBy(_ => random.Next()).Take(3).ToList();
+                var optionIndex = 0;
                 foreach (var option in decoys.Append(missing).OrderBy(_ => random.Next()))
                 {
-                    var answer = MakeButton(option, Color.FromArgb("#F2F0FB"), () =>
+                    var answer = MakeButton(option, Colors.White, () =>
                     {
                         if (optionsArea.Children.All(x => !x.IsEnabled)) return;
                         if (option == missing) { score++; question.Text = T("Exactement ! ✨"); }
@@ -360,9 +416,11 @@ public class MainPage : ContentPage
                             if (child is Button button) button.IsEnabled = false;
                         round++;
                         Task.Delay(750).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(ShowRound));
-                    });
-                    answer.TextColor = Ink;
-                    optionsArea.Children.Add(answer);
+                    }, 74);
+                    answer.FontSize = 35; answer.CornerRadius = 20;
+                    answer.Shadow = new Shadow { Brush = Color.FromArgb("#24715CE8"), Offset = new Point(0, 3), Radius = 7, Opacity = 0.25f };
+                    optionsArea.Add(answer, optionIndex % 2, optionIndex / 2);
+                    optionIndex++;
                 }
             }));
         }
@@ -386,14 +444,16 @@ public class MainPage : ContentPage
         for (var i = 0; i < 12; i++)
         {
             var index = i;
-            var card = new Button { Text = "?", FontSize = 28, FontAttributes = FontAttributes.Bold,
-                BackgroundColor = Color.FromArgb("#EEEAFE"), TextColor = Purple, CornerRadius = 17,
-                Shadow = new Shadow { Brush = Color.FromArgb("#90715CE8"), Offset = new Point(0, 5), Radius = 7, Opacity = 0.3f } };
+            var card = new Button { Text = "✦", FontSize = 29, FontAttributes = FontAttributes.Bold,
+                BackgroundColor = Color.FromArgb("#715CE8"), TextColor = Colors.White, CornerRadius = 20,
+                Shadow = new Shadow { Brush = Color.FromArgb("#65715CE8"), Offset = new Point(0, 5), Radius = 9, Opacity = 0.34f } };
             card.Clicked += async (_, _) =>
             {
                 if (busy || matched.Contains(index) || open.Contains(index)) return;
                 await card.RotateYToAsync(90, 90);
-                card.Text = symbols[index]; open.Add(index);
+                card.Text = symbols[index]; card.BackgroundColor = Colors.White;
+                card.TextColor = Color.FromArgb("#D93D65");
+                card.FontSize = 39; open.Add(index);
                 await card.RotateYToAsync(0, 100);
                 if (open.Count < 2) return;
                 busy = true;
@@ -402,12 +462,23 @@ public class MainPage : ContentPage
                 if (symbols[first] == symbols[second])
                 {
                     matched.Add(first); matched.Add(second); matches++; AddPoints(2);
-                    cards[first].BackgroundColor = Color.FromArgb("#DFF4EC");
-                    cards[second].BackgroundColor = Color.FromArgb("#DFF4EC");
+                    cards[first].BackgroundColor = Color.FromArgb("#CFF5E7");
+                    cards[second].BackgroundColor = Color.FromArgb("#CFF5E7");
+                    await cards[first].ScaleToAsync(1.08, 100); await cards[first].ScaleToAsync(1, 160, Easing.SpringOut);
+                    await cards[second].ScaleToAsync(1.08, 100); await cards[second].ScaleToAsync(1, 160, Easing.SpringOut);
                     status.Text = matches == 6 ? T("Toutes les paires trouvées ! 🎉") : F($"Paires trouvées : {matches} / 6", $"Pairs found: {matches} / 6", $"Paren gevonden: {matches} / 6");
                     if (matches == 6) AddPoints(8);
                 }
-                else { cards[first].Text = "?"; cards[second].Text = "?"; }
+                else
+                {
+                    cards[first].Text = "✦"; cards[second].Text = "✦";
+                    foreach (var missed in new[] { cards[first], cards[second] })
+                    {
+                        await missed.RotateYToAsync(90, 80);
+                        missed.BackgroundColor = Color.FromArgb("#715CE8"); missed.TextColor = Colors.White; missed.FontSize = 29;
+                        await missed.RotateYToAsync(0, 100);
+                    }
+                }
                 busy = false;
             };
             cards[i] = card; grid.Add(card, i % 3, i / 3);
@@ -920,6 +991,7 @@ public class MainPage : ContentPage
             body.Children.Add(MakeButton("Encore", Purple, PlayReflex));
         }, 230);
         circle.FontSize = 70;
+        circle.Shadow = new Shadow { Brush = Color.FromArgb("#50ED7C55"), Offset = new Point(0, 8), Radius = 16, Opacity = 0.38f };
         body.Children.Add(Panel(circle, Color.FromArgb("#FFF0EB")));
         body.Children.Add(status);
         Task.Delay(random.Next(1500, 4500)).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(() =>
@@ -934,7 +1006,7 @@ public class MainPage : ContentPage
     {
         const int size = 9;
         const int mineTotal = 10;
-        StartPage("XP Minesweeper Classic", T("Découvre toutes les cases sans mine. Active le mode drapeau pour signaler un danger."));
+        StartPage("Démineur", "Repère les cases sûres et évite les mines.");
 
         var mines = new bool[size, size];
         var opened = new bool[size, size];
@@ -950,20 +1022,21 @@ public class MainPage : ContentPage
         var hitColumn = -1;
         var status = Text(T("Première case sûre. À toi de jouer !"), 14, true, Muted);
 
-        Label Counter() => new()
+        Label Counter(string label, string color) => new()
         {
-            Text = "000", FontSize = 22, FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#FF3030"), BackgroundColor = Color.FromArgb("#202020"),
+            Text = label, FontSize = 16, FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb(color), BackgroundColor = Color.FromArgb("#25334A"),
             HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center,
-            WidthRequest = 76, HeightRequest = 38, Margin = new Thickness(4)
+            WidthRequest = 90, HeightRequest = 42, Margin = new Thickness(3), Padding = new Thickness(7, 4)
         };
-        var mineCounter = Counter();
-        var clock = Counter();
+        var mineCounter = Counter("💣 010", "#FFB86B");
+        var clock = Counter("⏱ 000", "#8EE6CE");
         var reset = new Button
         {
-            Text = "🙂", FontSize = 26, WidthRequest = 50, HeightRequest = 48,
-            Padding = 0, Margin = new Thickness(4), CornerRadius = 4,
-            BackgroundColor = Color.FromArgb("#C0C0C0")
+            Text = "↻", FontSize = 27, WidthRequest = 48, HeightRequest = 48,
+            Padding = 0, Margin = new Thickness(3), CornerRadius = 17,
+            BackgroundColor = Color.FromArgb("#715CE8"), TextColor = Colors.White,
+            Shadow = new Shadow { Brush = Color.FromArgb("#55715CE8"), Offset = new Point(0, 3), Radius = 7, Opacity = 0.35f }
         };
         reset.Clicked += (_, _) => PlayMinesweeper();
         var header = new Grid
@@ -974,13 +1047,13 @@ public class MainPage : ContentPage
                 new ColumnDefinition(GridLength.Auto),
                 new ColumnDefinition(new GridLength(1, GridUnitType.Star))
             },
-            BackgroundColor = Color.FromArgb("#C0C0C0"), Padding = 4
+            BackgroundColor = Colors.Transparent, Padding = 5, ColumnSpacing = 5
         };
         header.Add(mineCounter, 0, 0);
         header.Add(reset, 1, 0);
         header.Add(clock, 2, 0);
 
-        var grid = new Grid { RowSpacing = 2, ColumnSpacing = 2, HeightRequest = 360 };
+        var grid = new Grid { RowSpacing = 4, ColumnSpacing = 4, HeightRequest = 340 };
         for (var i = 0; i < size; i++)
         {
             grid.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
@@ -1030,16 +1103,16 @@ public class MainPage : ContentPage
 
         void RefreshBoard()
         {
-            mineCounter.Text = (mineTotal - flagCount).ToString("000");
-            clock.Text = Math.Min(elapsed, 999).ToString("000");
+            mineCounter.Text = $"💣 {(mineTotal - flagCount):000}";
+            clock.Text = $"⏱ {Math.Min(elapsed, 999):000}";
             for (var row = 0; row < size; row++)
                 for (var column = 0; column < size; column++)
                 {
                     var cell = cells[row, column];
                     cell.IsEnabled = !gameOver;
                     cell.BackgroundColor = opened[row, column]
-                        ? Color.FromArgb("#E8E8E8")
-                        : Color.FromArgb("#C0C0C0");
+                        ? Color.FromArgb("#F3F5FA")
+                        : flagged[row, column] ? Color.FromArgb("#FFE5BC") : Color.FromArgb("#607CE5");
                     cell.Text = flagged[row, column] ? "🚩"
                         : opened[row, column] && mines[row, column] ? "💣"
                         : opened[row, column] && NeighbourMines(row, column) > 0 ? NeighbourMines(row, column).ToString()
@@ -1055,7 +1128,7 @@ public class MainPage : ContentPage
         void Finish(bool won)
         {
             gameOver = true;
-            reset.Text = won ? "😎" : "😵";
+            reset.Text = "↻";
             if (won)
             {
                 for (var row = 0; row < size; row++)
@@ -1081,10 +1154,11 @@ public class MainPage : ContentPage
                 var cell = new Button
                 {
                     Text = "", FontSize = 16, FontAttributes = FontAttributes.Bold,
-                    Padding = 0, Margin = 0, CornerRadius = 3,
-                    BackgroundColor = Color.FromArgb("#C0C0C0"), TextColor = Ink
+                    Padding = 0, Margin = 0, CornerRadius = 8,
+                    BackgroundColor = Color.FromArgb("#607CE5"), TextColor = Colors.White,
+                    Shadow = new Shadow { Brush = Color.FromArgb("#1C25334A"), Offset = new Point(0, 2), Radius = 3, Opacity = 0.22f }
                 };
-                cell.Clicked += (_, _) =>
+                cell.Clicked += async (_, _) =>
                 {
                     if (gameOver) return;
                     if (flagMode)
@@ -1111,6 +1185,8 @@ public class MainPage : ContentPage
                         return;
                     }
 
+                    await cell.ScaleToAsync(0.88, 60);
+                    await cell.ScaleToAsync(1, 130, Easing.SpringOut);
                     Reveal(cellRow, cellColumn);
                     if (openedCount == size * size - mineTotal) Finish(true);
                     else
@@ -1131,11 +1207,11 @@ public class MainPage : ContentPage
                 header,
                 new Border
                 {
-                    BackgroundColor = Color.FromArgb("#808080"), StrokeThickness = 0,
-                    Padding = 4, Content = grid
+                    BackgroundColor = Color.FromArgb("#DDE4F4"), StrokeThickness = 0,
+                    StrokeShape = new RoundRectangle { CornerRadius = 18 }, Padding = 7, Content = grid
                 }
             }
-        }, Color.FromArgb("#C0C0C0"));
+        }, Color.FromArgb("#EFF2FA"));
         body.Children.Add(boardPanel);
         body.Children.Add(flagButton);
         body.Children.Add(status);
@@ -1146,7 +1222,7 @@ public class MainPage : ContentPage
             if (gameOver || !body.Children.Contains(boardPanel)) return false;
             if (!generated) return true;
             elapsed++;
-            clock.Text = Math.Min(elapsed, 999).ToString("000");
+            clock.Text = $"⏱ {Math.Min(elapsed, 999):000}";
             return !gameOver;
         });
     }
@@ -1166,13 +1242,26 @@ public class MainPage : ContentPage
     {
         StartPage("Pile ou face", "Pas besoin de choisir : lance la pièce !");
         var coin = Text("🪙", 100, true); var result = Text("Pile… ou face ?", 22, true);
-        body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { coin, result } }, Color.FromArgb("#FFF7E4")));
-        body.Children.Add(MakeButton("Lancer la pièce", Color.FromArgb("#E7A735"), async () =>
+        coin.Shadow = new Shadow { Brush = Color.FromArgb("#55D89A2B"), Offset = new Point(0, 8), Radius = 14, Opacity = 0.38f };
+        var flipping = false;
+        var flipButton = MakeButton("Lancer la pièce", Color.FromArgb("#D89A2B"), () => { });
+        flipButton.Clicked += async (_, _) =>
         {
+            if (flipping) return;
+            flipping = true; flipButton.IsEnabled = false;
             result.Text = T("La pièce tourne…");
-            for (var i = 0; i < 6; i++) { coin.Text = i % 2 == 0 ? "🟡" : "⚪"; await Task.Delay(100); }
-            var pile = random.Next(2) == 0; coin.Text = pile ? "🟡" : "⚪"; result.Text = T(pile ? "PILE !" : "FACE !");
-        }));
+            for (var i = 0; i < 6; i++)
+            {
+                coin.Text = i % 2 == 0 ? "🟡" : "⚪";
+                await coin.RotateYToAsync(coin.RotationY + 180, 110, Easing.CubicInOut);
+            }
+            var pile = random.Next(2) == 0; coin.Text = pile ? "🟡" : "⚪";
+            result.Text = T(pile ? "PILE !" : "FACE !");
+            await coin.ScaleToAsync(1.12, 100); await coin.ScaleToAsync(1, 180, Easing.SpringOut);
+            flipButton.IsEnabled = true; flipping = false;
+        };
+        body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { coin, result } }, Color.FromArgb("#FFF7E4")));
+        body.Children.Add(flipButton);
     }
 
     void PlaySurprise()
@@ -1180,13 +1269,24 @@ public class MainPage : ContentPage
         StartPage("Machine surprise", "Appuie et découvre ton emoji porte-bonheur !");
         var emojis = new[] { "🐱", "🍕", "🚀", "🦄", "🍀", "🎈", "🐸", "🌈", "🍉" };
         var display = Text("🎰", 90, true); var message = Text("Qui va apparaître ?", 20, true);
+        var spinning = false;
         body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { display, message } }, Color.FromArgb("#FCEAF4")));
-        body.Children.Add(MakeButton("Surprise !", Color.FromArgb("#DE5E91"), async () =>
+        var revealButton = MakeButton("Surprise !", Color.FromArgb("#DE5E91"), () => { });
+        revealButton.Clicked += async (_, _) =>
         {
+            if (spinning) return;
+            spinning = true; revealButton.IsEnabled = false;
             message.Text = T("Roulement…");
-            for (var i = 0; i < 8; i++) { display.Text = emojis[random.Next(emojis.Length)]; await Task.Delay(90); }
-            display.Text = emojis[random.Next(emojis.Length)]; message.Text = T("Encore ?");
-        }));
+            for (var i = 0; i < 10; i++)
+            {
+                display.Text = emojis[random.Next(emojis.Length)];
+                await display.RotateToAsync(display.Rotation + 42, 65, Easing.CubicOut);
+            }
+            display.Text = emojis[random.Next(emojis.Length)];
+            await display.ScaleToAsync(1.18, 110); await display.ScaleToAsync(1, 180, Easing.SpringOut);
+            message.Text = T("Encore ?"); revealButton.IsEnabled = true; spinning = false;
+        };
+        body.Children.Add(revealButton);
     }
 
     void AddPoints(int amount)
