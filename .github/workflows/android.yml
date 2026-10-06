@@ -1,4 +1,4 @@
-name: Build Kaskrout Android APK
+name: Build Kaskrout Android APK and AAB
 
 on:
   workflow_dispatch:
@@ -17,6 +17,15 @@ jobs:
           dotnet-version: 10.0.x
       - name: Install MAUI Android workload
         run: dotnet workload install maui-android
+      - name: Build Android App Bundle
+        run: dotnet publish Kaskrout.csproj -f net10.0-android -c Release -p:TargetFrameworks=net10.0-android -p:AndroidPackageFormat=aab -o ./artifacts/aab
+      - name: Upload Android App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kaskrout-Android-AAB
+          path: artifacts/aab/*.aab
+          if-no-files-found: error
+          retention-days: 14
       - name: Build APK
         run: dotnet publish Kaskrout.csproj -f net10.0-android -c Release -p:TargetFrameworks=net10.0-android -p:AndroidPackageFormat=apk -o ./artifacts/apk
       - name: Upload APK artifact
