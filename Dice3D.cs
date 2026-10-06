@@ -24,13 +24,13 @@ internal sealed class Dice3DDrawable : IDrawable
         // Standard die opposites: 1/6, 2/5, 3/4.
         (Pitch, Yaw, Roll) = value switch
         {
-            1 => (0, 0, 0),
-            6 => (0, MathF.PI, 0),
-            5 => (0, -MathF.PI / 2, 0),
-            2 => (0, MathF.PI / 2, 0),
-            3 => (MathF.PI / 2, 0, 0),
-            4 => (-MathF.PI / 2, 0, 0),
-            _ => (0, 0, 0)
+            1 => (0f, 0f, 0f),
+            6 => (0f, MathF.PI, 0f),
+            5 => (0f, -MathF.PI / 2, 0f),
+            2 => (0f, MathF.PI / 2, 0f),
+            3 => (MathF.PI / 2, 0f, 0f),
+            4 => (-MathF.PI / 2, 0f, 0f),
+            _ => (0f, 0f, 0f)
         };
     }
 
