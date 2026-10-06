@@ -9,7 +9,7 @@ L’application est disponible en français, anglais et néerlandais. Au premier
 - **Puzzle coulissant** : range les tuiles de 1 à 8.
 - **Objet manquant** : observe les images et retrouve celle qui a disparu.
 - **Jeu des paires** : retourne les cartes et associe les images identiques.
-- **Attrape les étoiles** : trouve l’étoile dans la grille avant la fin du chrono.
+- **Solitaire** : joue une partie classique, déplace les suites de cartes, retourne les cartes cachées et complète les quatre fondations.
 - **Lance le dé** et **Pile ou face** : mini-jeux de hasard avec animations.
 - **XP Minesweeper Classic** : trouve les cases sûres, marque les mines et nettoie la grille.
 - **Réflexe** et **Machine surprise**.
@@ -22,9 +22,9 @@ Après l’installation d’une nouvelle version avec une icône modifiée, dés
 
 Ouvre `Kaskrout.csproj` dans Visual Studio avec le workload .NET MAUI, puis choisis un émulateur Android.
 
-## APK Android
+## Paquets Android
 
-Chaque mise à jour de `main` lance le workflow **Build Kaskrout Android APK**. Après la réussite, télécharge `Kaskrout-Android-APK` depuis l’onglet **Actions**. L’artefact est conservé 14 jours. Tu peux aussi lancer le workflow manuellement.
+Chaque mise à jour de `main` lance le workflow **Build Kaskrout Android APK and AAB**. Après la réussite, télécharge `Kaskrout-Android-AAB` pour le bundle Android et `Kaskrout-Android-APK` pour installer l’application directement. Les artefacts sont conservés 14 jours. Tu peux aussi lancer le workflow manuellement.
 
 Pour compiler localement avec .NET 10 :
 
