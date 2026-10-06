@@ -447,57 +447,28 @@ public class MainPage : ContentPage
     void PlayDice()
     {
         StartPage("Lance le dé", "Lance le dé et essaie d’obtenir un six !");
-        var drawable = new Dice3DDrawable();
-        var die = new GraphicsView
+        var die = new WebView
         {
-            Drawable = drawable,
-            HeightRequest = 270,
+            Source = new HtmlWebViewSource { Html = Dice3D.Page },
+            HeightRequest = 280,
+            BackgroundColor = Colors.Transparent,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center
         };
+        var dieReady = false;
+        die.Navigated += (_, _) => dieReady = true;
         var result = Text("À toi de jouer !", 20, true, Muted);
         var rollButton = MakeButton("Lancer le dé", Green, () => { }, 58);
         var rolling = false;
         rollButton.Clicked += async (_, _) =>
         {
-            if (rolling) return;
+            if (rolling || !dieReady) return;
             rolling = true;
             rollButton.IsEnabled = false;
             result.Text = T("Ça tourne…");
-            var startPitch = drawable.Pitch;
-            var startYaw = drawable.Yaw;
-            var startRoll = drawable.Roll;
             var number = random.Next(1, 7);
-            const int frames = 64;
-            for (var frame = 0; frame <= frames; frame++)
-            {
-                var progress = frame / (float)frames;
-                var eased = 1 - MathF.Pow(1 - progress, 2.4f);
-                var momentum = MathF.Sin(progress * MathF.PI) * 0.55f;
-                drawable.Pitch = startPitch + (MathF.PI * 4.1f * eased) + momentum;
-                drawable.Yaw = startYaw + (MathF.PI * 6.2f * eased) - momentum * 0.7f;
-                drawable.Roll = startRoll + (MathF.PI * 3.8f * eased) + momentum * 0.45f;
-                die.Invalidate();
-                await Task.Delay(24);
-            }
-            var endPitch = drawable.Pitch;
-            var endYaw = drawable.Yaw;
-            var endRoll = drawable.Roll;
-            drawable.SetFaceToFront(number);
-            float NearestAngle(float target, float current) => target + MathF.Round((current - target) / (MathF.PI * 2)) * MathF.PI * 2;
-            var targetPitch = NearestAngle(drawable.Pitch, endPitch);
-            var targetYaw = NearestAngle(drawable.Yaw, endYaw);
-            var targetRoll = NearestAngle(drawable.Roll, endRoll);
-            for (var frame = 1; frame <= 12; frame++)
-            {
-                var t = frame / 12f;
-                var eased = 1 - MathF.Pow(1 - t, 3);
-                drawable.Pitch = endPitch + (targetPitch - endPitch) * eased;
-                drawable.Yaw = endYaw + (targetYaw - endYaw) * eased;
-                drawable.Roll = endRoll + (targetRoll - endRoll) * eased;
-                die.Invalidate();
-                await Task.Delay(18);
-            }
+            await die.EvaluateJavaScriptAsync($"rollDice({number})");
+            await Task.Delay(1750);
             result.Text = number == 6 ? T("Un six ! +3 points 🎉") : F($"Tu as obtenu {number}. Encore ?", $"You rolled {number}. Again?", $"Je gooide {number}. Nog een keer?");
             if (number == 6) AddPoints(3);
             rollButton.IsEnabled = true;
@@ -510,7 +481,6 @@ public class MainPage : ContentPage
             Children = { die, result }
         }, Color.FromArgb("#FFF0EE")));
         body.Children.Add(rollButton);
-        die.Invalidate();
     }
 
     void PlayReflex()
