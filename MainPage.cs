@@ -413,6 +413,9 @@ public class MainPage : ContentPage
         var sourceIndex = -1;
         var status = Text("Choisis une carte, puis sa destination.", 14, true, Muted);
         var moveCount = Text(F("Coups : 0", "Moves: 0", "Zetten: 0"), 15, true, Purple);
+        var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill };
+        for (var i = 0; i < 7; i++)
+            tableauGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
 
         for (var column = 0; column < 7; column++)
         {
@@ -469,9 +472,6 @@ public class MainPage : ContentPage
             topRow.Add(button, i + 2, 0);
         }
 
-        var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill };
-        for (var i = 0; i < 7; i++)
-            tableauGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         body.Children.Add(Panel(new VerticalStackLayout { Spacing = 8, Children = { topRow, moveCount } }, Color.FromArgb("#EAF3EA")));
         body.Children.Add(tableauGrid);
         body.Children.Add(status);
