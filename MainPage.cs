@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Layouts;
 
 namespace Kaskrout;
 
@@ -519,8 +520,10 @@ public class MainPage : ContentPage
         }
 
         var foundationSlots = new Border[4];
-        var wasteSlot = Slot(null, null, () => SelectWaste());
-        var stockSlot = Slot(null, null, () => DrawStock());
+        Border wasteSlot = null!;
+        Border stockSlot = null!;
+        wasteSlot = Slot(null, null, () => SelectWaste());
+        stockSlot = Slot(null, null, () => DrawStock());
         for (var i = 0; i < suits.Length; i++)
         {
             var suit = suits[i];
@@ -795,7 +798,7 @@ public class MainPage : ContentPage
             if (justMovedCard is not null) justMovedCard = null;
         }
 
-        View CardFace(SolitaireCard card, bool selected, bool hinted)
+        Border CardFace(SolitaireCard card, bool selected, bool hinted)
         {
             var red = IsRedSuit(card.Suit);
             var ink = red ? Color.FromArgb("#D71931") : Color.FromArgb("#172126");
@@ -803,7 +806,7 @@ public class MainPage : ContentPage
             face.Add(new Label { Text = CardRank(card), FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = ink }, 0, 0);
             face.Add(new Label { Text = card.Suit.ToString(), FontSize = 29, FontAttributes = FontAttributes.Bold, TextColor = ink,
                 HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }, 0, 1);
-            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 10, TextColor = ink, HorizontalTextAlignment = TextAlignment.Right }, 0, 2);
+                face.Add(new Label { Text = card.Suit.ToString(), FontSize = 10, TextColor = ink, HorizontalTextAlignment = TextAlignment.End }, 0, 2);
             var border = new Border { HeightRequest = 66, Padding = 0, BackgroundColor = Colors.White,
                 Stroke = hinted || selected ? Color.FromArgb("#FFE16A") : Color.FromArgb("#DCE4E0"), StrokeThickness = hinted || selected ? 2.5 : 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = face,
@@ -812,7 +815,7 @@ public class MainPage : ContentPage
             return border;
         }
 
-        View CardBack(int? count)
+        Border CardBack(int? count)
         {
             var inside = new Border { Margin = 3, Padding = 0, Stroke = Color.FromArgb("#F7DDE0"), StrokeThickness = 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 5 },
