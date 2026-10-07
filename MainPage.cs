@@ -1140,10 +1140,58 @@ public class MainPage : ContentPage
                         }
                 status.Text = T("Grille nettoyée ! +10 points 🎉");
                 AddPoints(10);
+                var confetti = new Grid { HeightRequest = 42, ColumnSpacing = 13, HorizontalOptions = LayoutOptions.Center };
+                var confettiIcons = new[] { "🎉", "✨", "🎊", "⭐", "🎉" };
+                for (var i = 0; i < confettiIcons.Length; i++)
+                {
+                    confetti.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+                    var piece = Text(confettiIcons[i], i % 2 == 0 ? 26 : 21, true);
+                    confetti.Add(piece, i, 0);
+                    var delay = i * 45;
+                    _ = CelebratePiece(piece, delay, i % 2 == 0 ? -13 : 12);
+                }
+                var celebration = new Border
+                {
+                    Background = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
+                        GradientStops = { new GradientStop(Color.FromArgb("#FFF0B8"), 0), new GradientStop(Color.FromArgb("#FFE0EA"), 1) }
+                    },
+                    Stroke = Color.FromArgb("#FFFFD166"), StrokeThickness = 1.5,
+                    StrokeShape = new RoundRectangle { CornerRadius = 26 }, Padding = new Thickness(16, 12),
+                    Shadow = new Shadow { Brush = Color.FromArgb("#44D99B27"), Offset = new Point(0, 6), Radius = 13, Opacity = 0.3f },
+                    Content = new VerticalStackLayout
+                    {
+                        Spacing = 4, HorizontalOptions = LayoutOptions.Fill,
+                        Children =
+                        {
+                            confetti,
+                            Text("🏆", 54, true, Color.FromArgb("#D89520")),
+                            Text(F("Bravo, tu as gagné !", "Amazing, you won!", "Geweldig, je hebt gewonnen!"), 22, true, Color.FromArgb("#6B45C2")),
+                            Text(F("Terrain nettoyé !", "The board is clear!", "Het bord is leeg!"), 15, true, Ink),
+                            new Border { HorizontalOptions = LayoutOptions.Center, Margin = new Thickness(0, 5, 0, 0),
+                                BackgroundColor = Colors.White, StrokeThickness = 0,
+                                StrokeShape = new RoundRectangle { CornerRadius = 18 }, Padding = new Thickness(15, 7),
+                                Content = Text(F("⭐  +10 points", "⭐  +10 points", "⭐  +10 punten"), 16, true, Color.FromArgb("#BA841C")) }
+                        }
+                    }
+                };
+                celebration.Scale = 0.78; celebration.Opacity = 0;
+                body.Children.Insert(2, celebration);
+                _ = celebration.FadeToAsync(1, 360);
+                _ = celebration.ScaleToAsync(1, 520, Easing.SpringOut);
             }
             else
                 status.Text = T("Mines révélées ! Recommence pour tenter ta chance.");
             RefreshBoard();
+        }
+
+        async Task CelebratePiece(VisualElement piece, int delay, double hop)
+        {
+            await Task.Delay(delay);
+            await piece.TranslateToAsync(0, hop, 230, Easing.CubicOut);
+            await piece.RotateToAsync(hop * 3, 260, Easing.CubicInOut);
+            await piece.TranslateToAsync(0, 0, 300, Easing.SpringOut);
         }
 
         for (var row = 0; row < size; row++)
