@@ -76,6 +76,7 @@ public class MainPage : ContentPage
     bool running;
     bool armed;
     bool solitaireActive;
+    Border? activeFeedback;
     DateTime startAt;
 
     public MainPage(string language = "fr")
@@ -125,6 +126,7 @@ public class MainPage : ContentPage
     {
         running = false;
         solitaireActive = false;
+        activeFeedback = null;
         BackgroundColor = Paper;
         body.BackgroundColor = Colors.Transparent;
         body.Spacing = 16;
@@ -224,6 +226,7 @@ public class MainPage : ContentPage
     {
         running = false;
         solitaireActive = false;
+        activeFeedback = null;
         BackgroundColor = Paper;
         body.BackgroundColor = Colors.Transparent;
         body.Spacing = 16;
@@ -277,6 +280,70 @@ public class MainPage : ContentPage
         _ = hero.TranslateToAsync(0, 0, 240, Easing.CubicOut);
     }
 
+    void ShowGameFeedback(bool won, string message, bool temporary = false)
+    {
+        if (activeFeedback is not null && body.Children.Contains(activeFeedback))
+            body.Children.Remove(activeFeedback);
+
+        var accent = won ? Color.FromArgb("#8A5CE6") : Color.FromArgb("#D94D68");
+        var gradient = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
+        gradient.GradientStops.Add(new GradientStop(Color.FromArgb(won ? "#FFF0BD" : "#FFE5EA"), 0));
+        gradient.GradientStops.Add(new GradientStop(Color.FromArgb(won ? "#FBE0F1" : "#FFF0F2"), 1));
+        var content = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) },
+            ColumnSpacing = 12
+        };
+        var icon = new Label { Text = won ? "🎉" : "😭", FontSize = 42, VerticalTextAlignment = TextAlignment.Center };
+        var resultStack = new VerticalStackLayout
+        {
+            Spacing = 2, VerticalOptions = LayoutOptions.Center,
+            Children = { Text(won ? F("Bravo !", "You did it!", "Goed gedaan!") : F("Oh non !", "Oh no!", "O nee!"), 19, true, accent), Text(message, 14, true, Ink) }
+        };
+        if (won) resultStack.Children.Add(Text("✨  🎊  ⭐  🎊  ✨", 14, true, Color.FromArgb("#CB8B22")));
+        content.Add(icon, 0, 0);
+        content.Add(resultStack, 1, 0);
+        var card = new Border
+        {
+            Background = gradient,
+            Stroke = won ? Color.FromArgb("#FFFFD166") : Color.FromArgb("#FFF1B9C4"),
+            StrokeThickness = 1.5, StrokeShape = new RoundRectangle { CornerRadius = 23 },
+            Padding = new Thickness(13, 10),
+            Shadow = new Shadow { Brush = Color.FromArgb(won ? "#40D99B27" : "#25D94D68"), Offset = new Point(0, 4), Radius = 10, Opacity = 0.28f },
+            Content = content
+        };
+        activeFeedback = card;
+        body.Children.Insert(Math.Min(2, body.Children.Count), card);
+        card.Scale = 0.82; card.Opacity = 0;
+        _ = card.FadeToAsync(1, 250);
+        _ = card.ScaleToAsync(1, 400, Easing.SpringOut);
+
+        if (won)
+        {
+            _ = icon.RotateToAsync(14, 160);
+            _ = icon.RotateToAsync(-14, 300, Easing.SpringOut);
+            _ = icon.RotateToAsync(0, 180, Easing.SpringOut);
+        }
+        else
+        {
+            _ = icon.TranslateToAsync(-5, 0, 70);
+            _ = icon.TranslateToAsync(5, 0, 90);
+            _ = icon.TranslateToAsync(0, 0, 100);
+        }
+
+        if (temporary)
+            Task.Delay(1350).ContinueWith(_ => MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (!ReferenceEquals(activeFeedback, card)) return;
+                _ = card.FadeToAsync(0, 180);
+                Task.Delay(190).ContinueWith(__ => MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (ReferenceEquals(activeFeedback, card)) body.Children.Remove(card);
+                    if (ReferenceEquals(activeFeedback, card)) activeFeedback = null;
+                }));
+            }));
+    }
+
     void SelectLanguage() => Application.Current!.MainPage = new LanguageSelectionPage();
 
     Border Panel(View content, Color? color = null) => new()
@@ -318,6 +385,7 @@ public class MainPage : ContentPage
                 {
                     status.Text = F($"Bravo ! Puzzle terminé en {moves} coups 🎉", $"Great! Puzzle completed in {moves} moves 🎉", $"Goed gedaan! Puzzel opgelost in {moves} zetten 🎉");
                     AddPoints(10);
+                    ShowGameFeedback(true, F($"Puzzle terminé en {moves} coups ! +10 points", $"Puzzle solved in {moves} moves! +10 points", $"Puzzel opgelost in {moves} zetten! +10 punten"));
                     foreach (var tile in buttons) tile.IsEnabled = false;
                 }
             };
@@ -379,6 +447,7 @@ public class MainPage : ContentPage
                 }));
                 roundArea.Children.Add(MakeButton("Rejouer", Purple, PlayMissingObject));
                 AddPoints(score * 3);
+                ShowGameFeedback(true, F($"Défi terminé ! +{score * 3} points", $"Challenge complete! +{score * 3} points", $"Uitdaging voltooid! +{score * 3} punten"));
                 return;
             }
 
@@ -410,8 +479,16 @@ public class MainPage : ContentPage
                     var answer = MakeButton(option, Colors.White, () =>
                     {
                         if (optionsArea.Children.All(x => !x.IsEnabled)) return;
-                        if (option == missing) { score++; question.Text = T("Exactement ! ✨"); }
-                        else question.Text = F($"C’était {missing} !", $"It was {missing}!", $"Het was {missing}!");
+                        if (option == missing)
+                        {
+                            score++; question.Text = T("Exactement ! ✨");
+                            ShowGameFeedback(true, F("Bonne réponse !", "Correct answer!", "Goed antwoord!"), true);
+                        }
+                        else
+                        {
+                            question.Text = F($"C’était {missing} !", $"It was {missing}!", $"Het was {missing}!");
+                            ShowGameFeedback(false, F("Essaie encore au prochain tour.", "Try again next round.", "Probeer het opnieuw in de volgende ronde."), true);
+                        }
                         foreach (var child in optionsArea.Children)
                             if (child is Button button) button.IsEnabled = false;
                         round++;
@@ -467,10 +544,16 @@ public class MainPage : ContentPage
                     await cards[first].ScaleToAsync(1.08, 100); await cards[first].ScaleToAsync(1, 160, Easing.SpringOut);
                     await cards[second].ScaleToAsync(1.08, 100); await cards[second].ScaleToAsync(1, 160, Easing.SpringOut);
                     status.Text = matches == 6 ? T("Toutes les paires trouvées ! 🎉") : F($"Paires trouvées : {matches} / 6", $"Pairs found: {matches} / 6", $"Paren gevonden: {matches} / 6");
-                    if (matches == 6) AddPoints(8);
+                    if (matches == 6)
+                    {
+                        AddPoints(8);
+                        ShowGameFeedback(true, F("Toutes les paires sont trouvées !", "You found every pair!", "Je hebt alle paren gevonden!"));
+                    }
+                    else ShowGameFeedback(true, F("Paire trouvée !", "Match found!", "Paar gevonden!"), true);
                 }
                 else
                 {
+                    ShowGameFeedback(false, F("Ces cartes ne vont pas ensemble.", "Those cards do not match.", "Deze kaarten horen niet bij elkaar."), true);
                     cards[first].Text = "✦"; cards[second].Text = "✦";
                     foreach (var missed in new[] { cards[first], cards[second] })
                     {
@@ -492,6 +575,7 @@ public class MainPage : ContentPage
     {
         running = false;
         solitaireActive = false;
+        activeFeedback = null;
         body.Children.Clear();
         body.Spacing = 11;
         body.Padding = new Thickness(12, 12, 12, 18);
@@ -735,6 +819,7 @@ public class MainPage : ContentPage
                 }
                 if (TryMoveToTableau(column)) return;
                 status.Text = T("Déplacement impossible.");
+                ShowGameFeedback(false, F("Essaie une autre colonne.", "Try another column.", "Probeer een andere kolom."), true);
                 return;
             }
 
@@ -791,13 +876,13 @@ public class MainPage : ContentPage
             if (source == SolitaireSource.Waste) sourcePile = waste;
             else if (source == SolitaireSource.Tableau && sourceIndex == tableau[sourceColumn].Count - 1)
                 sourcePile = tableau[sourceColumn];
-            else { status.Text = T("Déplacement impossible."); return; }
+            else { status.Text = T("Déplacement impossible."); ShowGameFeedback(false, T("Déplacement impossible."), true); return; }
 
             if (sourcePile.Count == 0) return;
             var card = sourcePile[^1];
             var foundation = foundations[suit];
             var canPlace = card.Suit == suit && (foundation.Count == 0 ? card.Rank == 1 : card.Rank == foundation[^1].Rank + 1);
-            if (!canPlace) { status.Text = T("Déplacement impossible."); return; }
+            if (!canPlace) { status.Text = T("Déplacement impossible."); ShowGameFeedback(false, T("Déplacement impossible."), true); return; }
 
             SaveUndo();
             sourcePile.RemoveAt(sourcePile.Count - 1);
@@ -809,6 +894,7 @@ public class MainPage : ContentPage
             {
                 score += 100;
                 status.Text = T("Partie terminée ! Tu as gagné 🎉"); solitaireActive = false;
+                ShowGameFeedback(true, F("Solitaire terminé !", "Solitaire complete!", "Patience voltooid!"));
             }
             else status.Text = T("Choisis une carte, puis sa destination.");
             Refresh();
@@ -957,7 +1043,12 @@ public class MainPage : ContentPage
             await die.EvaluateJavaScriptAsync($"rollDice({number})");
             await Task.Delay(1750);
             result.Text = number == 6 ? T("Un six ! +3 points 🎉") : F($"Tu as obtenu {number}. Encore ?", $"You rolled {number}. Again?", $"Je gooide {number}. Nog een keer?");
-            if (number == 6) AddPoints(3);
+            if (number == 6)
+            {
+                AddPoints(3);
+                ShowGameFeedback(true, F("Un six ! +3 points", "A six! +3 points", "Zes! +3 punten"), true);
+            }
+            else ShowGameFeedback(false, F($"Tu as obtenu {number}.", $"You rolled {number}.", $"Je gooide {number}."), true);
             rollButton.IsEnabled = true;
             rolling = false;
         };
@@ -982,12 +1073,14 @@ public class MainPage : ContentPage
             if (!armed)
             {
                 running = false; status.Text = T("Trop tôt ! Essaie encore."); circle.Text = "🙈";
+                ShowGameFeedback(false, F("Tu as appuyé trop tôt.", "You tapped too early.", "Je tikte te vroeg."));
                 body.Children.Add(MakeButton("Rejouer", Purple, PlayReflex)); return;
             }
             running = false;
             var milliseconds = (DateTime.UtcNow - startAt).TotalMilliseconds;
             var reward = Math.Max(1, 10 - (int)(milliseconds / 100)); AddPoints(reward);
             status.Text = F($"{milliseconds:0} ms — +{reward} points !", $"{milliseconds:0} ms — +{reward} points!", $"{milliseconds:0} ms — +{reward} punten!");
+            ShowGameFeedback(true, F($"Réussi en {milliseconds:0} ms ! +{reward} points", $"You did it in {milliseconds:0} ms! +{reward} points", $"Gelukt in {milliseconds:0} ms! +{reward} punten"));
             body.Children.Add(MakeButton("Encore", Purple, PlayReflex));
         }, 230);
         circle.FontSize = 70;
@@ -1140,58 +1233,14 @@ public class MainPage : ContentPage
                         }
                 status.Text = T("Grille nettoyée ! +10 points 🎉");
                 AddPoints(10);
-                var confetti = new Grid { HeightRequest = 42, ColumnSpacing = 13, HorizontalOptions = LayoutOptions.Center };
-                var confettiIcons = new[] { "🎉", "✨", "🎊", "⭐", "🎉" };
-                for (var i = 0; i < confettiIcons.Length; i++)
-                {
-                    confetti.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-                    var piece = Text(confettiIcons[i], i % 2 == 0 ? 26 : 21, true);
-                    confetti.Add(piece, i, 0);
-                    var delay = i * 45;
-                    _ = CelebratePiece(piece, delay, i % 2 == 0 ? -13 : 12);
-                }
-                var celebration = new Border
-                {
-                    Background = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
-                        GradientStops = { new GradientStop(Color.FromArgb("#FFF0B8"), 0), new GradientStop(Color.FromArgb("#FFE0EA"), 1) }
-                    },
-                    Stroke = Color.FromArgb("#FFFFD166"), StrokeThickness = 1.5,
-                    StrokeShape = new RoundRectangle { CornerRadius = 26 }, Padding = new Thickness(16, 12),
-                    Shadow = new Shadow { Brush = Color.FromArgb("#44D99B27"), Offset = new Point(0, 6), Radius = 13, Opacity = 0.3f },
-                    Content = new VerticalStackLayout
-                    {
-                        Spacing = 4, HorizontalOptions = LayoutOptions.Fill,
-                        Children =
-                        {
-                            confetti,
-                            Text("🏆", 54, true, Color.FromArgb("#D89520")),
-                            Text(F("Bravo, tu as gagné !", "Amazing, you won!", "Geweldig, je hebt gewonnen!"), 22, true, Color.FromArgb("#6B45C2")),
-                            Text(F("Terrain nettoyé !", "The board is clear!", "Het bord is leeg!"), 15, true, Ink),
-                            new Border { HorizontalOptions = LayoutOptions.Center, Margin = new Thickness(0, 5, 0, 0),
-                                BackgroundColor = Colors.White, StrokeThickness = 0,
-                                StrokeShape = new RoundRectangle { CornerRadius = 18 }, Padding = new Thickness(15, 7),
-                                Content = Text(F("⭐  +10 points", "⭐  +10 points", "⭐  +10 punten"), 16, true, Color.FromArgb("#BA841C")) }
-                        }
-                    }
-                };
-                celebration.Scale = 0.78; celebration.Opacity = 0;
-                body.Children.Insert(2, celebration);
-                _ = celebration.FadeToAsync(1, 360);
-                _ = celebration.ScaleToAsync(1, 520, Easing.SpringOut);
+                ShowGameFeedback(true, F("Grille nettoyée ! +10 points", "Board cleared! +10 points", "Bord leeggemaakt! +10 punten"));
             }
             else
+            {
                 status.Text = T("Mines révélées ! Recommence pour tenter ta chance.");
+                ShowGameFeedback(false, F("Une mine a explosé. Recommence !", "A mine exploded. Try again!", "Een mijn is ontploft. Probeer opnieuw!"));
+            }
             RefreshBoard();
-        }
-
-        async Task CelebratePiece(VisualElement piece, int delay, double hop)
-        {
-            await Task.Delay(delay);
-            await piece.TranslateToAsync(0, hop, 230, Easing.CubicOut);
-            await piece.RotateToAsync(hop * 3, 260, Easing.CubicInOut);
-            await piece.TranslateToAsync(0, 0, 300, Easing.SpringOut);
         }
 
         for (var row = 0; row < size; row++)
