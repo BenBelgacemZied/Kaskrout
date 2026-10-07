@@ -47,9 +47,8 @@ public class MainPage : ContentPage
         ["Lance le dé et essaie d’obtenir un six !"] = ["Roll the dice and try to get a six!", "Gooi de dobbelsteen en probeer zes te halen!"], ["À toi de jouer !"] = ["Your turn!", "Jij bent aan de beurt!"], ["Ça tourne…"] = ["Rolling…", "Hij rolt…"],
         ["Attends le vert… puis appuie vite !"] = ["Wait for green… then tap quickly!", "Wacht op groen… en tik dan snel!"], ["Patiente un instant…"] = ["Wait a moment…", "Wacht even…"], ["Trop tôt ! Essaie encore."] = ["Too soon! Try again.", "Te vroeg! Probeer opnieuw."], ["MAINTENANT !"] = ["NOW!", "NU!"], ["Encore"] = ["Again", "Nog een keer"],
         ["Pas besoin de choisir : lance la pièce !"] = ["No need to choose: flip the coin!", "Je hoeft niet te kiezen: gooi de munt op!"], ["Pile… ou face ?"] = ["Heads… or tails?", "Kop… of munt?"], ["Lancer la pièce"] = ["Flip the coin", "Gooi de munt"], ["La pièce tourne…"] = ["The coin is spinning…", "De munt draait…"], ["PILE !"] = ["HEADS!", "KOP!"], ["FACE !"] = ["TAILS!", "MUNT!"],
-        ["Appuie et découvre ton emoji porte-bonheur !"] = ["Tap and discover your lucky emoji!", "Tik en ontdek je geluks-emoji!"], ["Qui va apparaître ?"] = ["Who will appear?", "Wie verschijnt er?"], ["Surprise !"] = ["Surprise!", "Verrassing!"], ["Roulement…"] = ["Rolling…", "Spannend…"], ["Encore ?"] = ["Again?", "Nog een keer?"],
         ["seconde"] = ["second", "seconde"], ["secondes"] = ["seconds", "seconden"], ["étoile"] = ["star", "ster"], ["étoiles"] = ["stars", "sterren"],
-        ["Terminé !"] = ["Time's up!", "Tijd is om!"], ["Tu as trouvé"] = ["You found", "Je vond"], ["objets sur"] = ["objects out of", "voorwerpen van"], ["C’était"] = ["It was", "Het was"], ["Bravo ! Puzzle terminé en"] = ["Great! Puzzle completed in", "Goed gedaan! Puzzel opgelost in"], ["coups"] = ["moves", "zetten"], ["Tu as obtenu"] = ["You rolled", "Je gooide"], ["Un six ! +3 points 🎉"] = ["A six! +3 points 🎉", "Zes! +3 punten 🎉"],
+        ["Terminé !"] = ["Time's up!", "Tijd is om!"], ["Tu as trouvé"] = ["You found", "Je vond"], ["objets sur"] = ["objects out of", "voorwerpen van"], ["C’était"] = ["It was", "Het was"], ["Bravo ! Puzzle terminé en"] = ["Great! Puzzle completed in", "Goed gedaan! Puzzel opgelost in"], ["coups"] = ["moves", "zetten"], ["Tu as obtenu"] = ["You rolled", "Je gooide"],
         ["étoile(s) !"] = ["star(s)!", "ster(ren)!"], ["étoiles attrapées"] = ["stars caught", "sterren gevangen"],
         ["Langue : Français"] = ["Language: English", "Taal: Nederlands"],
     };
@@ -917,7 +916,8 @@ public class MainPage : ContentPage
             for (var column = 0; column < tableau.Length; column++)
             {
                 var columnIndex = column;
-                var pileView = new AbsoluteLayout { HorizontalOptions = LayoutOptions.Fill };
+                // Keep the complete card bounds visible, including the lower corners and shadow.
+                var pileView = new AbsoluteLayout { HorizontalOptions = LayoutOptions.Fill, IsClippedToBounds = false };
                 if (tableau[column].Count == 0)
                 {
                     var empty = Slot(null, null, () => HandleTableauTap(columnIndex, -1), hintTargetColumn == columnIndex);
@@ -926,6 +926,7 @@ public class MainPage : ContentPage
                     pileView.Children.Add(empty); pileView.HeightRequest = 66;
                 }
                 var y = 0d;
+                var pileBottom = 0d;
                 for (var i = 0; i < tableau[column].Count; i++)
                 {
                     var cardIndex = i;
@@ -933,7 +934,8 @@ public class MainPage : ContentPage
                     var selected = source == SolitaireSource.Tableau && sourceColumn == column && cardIndex >= sourceIndex;
                     var faceDown = card.FaceDown;
                     var cardView = faceDown ? CardBack(null) : CardFace(card, selected, ReferenceEquals(hintCard, card));
-                    var cardHeight = faceDown ? 38 : 66;
+                    // Render every tableau card at full height so no card is hidden by overlap.
+                    var cardHeight = 66;
                     AbsoluteLayout.SetLayoutBounds(cardView, new Rect(0, y, 1, cardHeight));
                     AbsoluteLayout.SetLayoutFlags(cardView, AbsoluteLayoutFlags.WidthProportional);
                     var capturedIndex = cardIndex;
@@ -945,10 +947,11 @@ public class MainPage : ContentPage
                         _ = cardView.FadeToAsync(1, 190); _ = cardView.ScaleToAsync(1, 210, Easing.SpringOut);
                     }
                     pileView.Children.Add(cardView);
-                    // Face-up cards stay mostly visible; only their lower edge overlaps.
-                    y += faceDown ? 24 : 56;
+                    pileBottom = y + cardHeight;
+                    // Klondike normally fans cards with overlap; this layout keeps every card whole.
+                    y += cardHeight;
                 }
-                if (tableau[column].Count > 0) pileView.HeightRequest = y + 42;
+                if (tableau[column].Count > 0) pileView.HeightRequest = pileBottom + 8;
                 tableauGrid.Add(pileView, column, 0);
             }
             if (justMovedCard is not null) justMovedCard = null;
@@ -980,7 +983,7 @@ public class MainPage : ContentPage
             if (count.HasValue) grid.Add(new Label { Text = count.Value.ToString(), FontSize = 10, FontAttributes = FontAttributes.Bold,
                 TextColor = Colors.White, BackgroundColor = Color.FromArgb("#A71930"), HorizontalTextAlignment = TextAlignment.Center,
                 VerticalTextAlignment = TextAlignment.Center, WidthRequest = 18, HeightRequest = 17, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.End }, 0, 0);
-            return new Border { WidthRequest = 46, HeightRequest = count.HasValue ? 66 : 38, Padding = 2,
+            return new Border { WidthRequest = 46, HeightRequest = 66, Padding = 2,
                 BackgroundColor = Color.FromArgb("#B51F37"), Stroke = Colors.White, StrokeThickness = 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = grid,
                 Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.4f } };
