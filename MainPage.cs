@@ -37,7 +37,6 @@ public class MainPage : ContentPage
         ["Mines révélées ! Recommence pour tenter ta chance."] = ["Mine revealed! Start a new game and try again.", "Mijn gevonden! Start een nieuw spel en probeer opnieuw."],
         ["Grille nettoyée ! +10 points 🎉"] = ["Board cleared! +10 points 🎉", "Bord leeggemaakt! +10 punten 🎉"],
         ["Pile ou face"] = ["Heads or tails", "Kop of munt"], ["La pièce choisit pour toi"] = ["Let the coin choose for you", "Laat de munt voor je kiezen"],
-        ["Machine surprise"] = ["Surprise machine", "Verrassingsmachine"], ["Quel emoji va sortir ?"] = ["Which emoji will appear?", "Welke emoji verschijnt er?"],
         ["Puzzle coulissant"] = ["Sliding puzzle", "Schuifpuzzel"], ["Fais glisser les nombres pour les ranger de 1 à 8."] = ["Slide the numbers to put them in order from 1 to 8.", "Schuif de cijfers op volgorde van 1 tot 8."],
         ["Coups : 0"] = ["Moves: 0", "Zetten: 0"], ["Mélanger"] = ["Shuffle", "Schudden"],
         ["Observe les images, puis retrouve celle qui a disparu."] = ["Study the pictures, then find the one that disappeared.", "Bekijk de plaatjes en vind daarna wat verdwenen is."],
@@ -172,8 +171,7 @@ public class MainPage : ContentPage
             ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", PlayDice),
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", PlayReflex),
             ("💎", "Démineur", "Repère les cases sûres", "#E8EEF5", PlayMinesweeper),
-            ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", PlayCoin),
-            ("🎰", "Machine surprise", "Quel emoji va sortir ?", "#FCE8F4", PlaySurprise)
+            ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", PlayCoin)
         };
         var grid = new Grid { ColumnSpacing = 12, RowSpacing = 12 };
         grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
@@ -251,7 +249,7 @@ public class MainPage : ContentPage
         {
             "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏",
             "Lance le dé" => "🎲", "Réflexe" => "⚡", "Démineur" => "💎",
-            "Pile ou face" => "🪙", "Machine surprise" => "🎁", _ => "✨"
+            "Pile ou face" => "🪙", _ => "✨"
         };
         var heroGrid = new Grid
         {
@@ -947,7 +945,8 @@ public class MainPage : ContentPage
                         _ = cardView.FadeToAsync(1, 190); _ = cardView.ScaleToAsync(1, 210, Easing.SpringOut);
                     }
                     pileView.Children.Add(cardView);
-                    y += faceDown ? 15 : 27;
+                    // Face-up cards stay mostly visible; only their lower edge overlaps.
+                    y += faceDown ? 24 : 56;
                 }
                 if (tableau[column].Count > 0) pileView.HeightRequest = y + 42;
                 tableauGrid.Add(pileView, column, 0);
@@ -959,11 +958,11 @@ public class MainPage : ContentPage
         {
             var red = IsRedSuit(card.Suit);
             var ink = red ? Color.FromArgb("#D71931") : Color.FromArgb("#172126");
-            var face = new Grid { Padding = new Thickness(4, 3), RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
-            face.Add(new Label { Text = CardRank(card), FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = ink }, 0, 0);
-            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 29, FontAttributes = FontAttributes.Bold, TextColor = ink,
+            var face = new Grid { Padding = new Thickness(5, 4), RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
+            face.Add(new Label { Text = CardRank(card), FontSize = 14, FontAttributes = FontAttributes.Bold, TextColor = ink }, 0, 0);
+            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 25, FontAttributes = FontAttributes.Bold, TextColor = ink,
                 HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }, 0, 1);
-                face.Add(new Label { Text = card.Suit.ToString(), FontSize = 10, TextColor = ink, HorizontalTextAlignment = TextAlignment.End }, 0, 2);
+            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 11, TextColor = ink, HorizontalTextAlignment = TextAlignment.End }, 0, 2);
             var border = new Border { HeightRequest = 66, Padding = 0, BackgroundColor = Colors.White,
                 Stroke = hinted || selected ? Color.FromArgb("#FFE16A") : Color.FromArgb("#DCE4E0"), StrokeThickness = hinted || selected ? 2.5 : 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = face,
@@ -1042,13 +1041,9 @@ public class MainPage : ContentPage
             var number = random.Next(1, 7);
             await die.EvaluateJavaScriptAsync($"rollDice({number})");
             await Task.Delay(1750);
-            result.Text = number == 6 ? T("Un six ! +3 points 🎉") : F($"Tu as obtenu {number}. Encore ?", $"You rolled {number}. Again?", $"Je gooide {number}. Nog een keer?");
+            result.Text = F($"Résultat : {number}", $"Result: {number}", $"Resultaat: {number}");
             if (number == 6)
-            {
                 AddPoints(3);
-                ShowGameFeedback(true, F("Un six ! +3 points", "A six! +3 points", "Zes! +3 punten"), true);
-            }
-            else ShowGameFeedback(false, F($"Tu as obtenu {number}.", $"You rolled {number}.", $"Je gooide {number}."), true);
             rollButton.IsEnabled = true;
             rolling = false;
         };
@@ -1359,31 +1354,6 @@ public class MainPage : ContentPage
         };
         body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { coin, result } }, Color.FromArgb("#FFF7E4")));
         body.Children.Add(flipButton);
-    }
-
-    void PlaySurprise()
-    {
-        StartPage("Machine surprise", "Appuie et découvre ton emoji porte-bonheur !");
-        var emojis = new[] { "🐱", "🍕", "🚀", "🦄", "🍀", "🎈", "🐸", "🌈", "🍉" };
-        var display = Text("🎰", 90, true); var message = Text("Qui va apparaître ?", 20, true);
-        var spinning = false;
-        body.Children.Add(Panel(new VerticalStackLayout { Spacing = 12, Padding = new Thickness(12, 20), Children = { display, message } }, Color.FromArgb("#FCEAF4")));
-        var revealButton = MakeButton("Surprise !", Color.FromArgb("#DE5E91"), () => { });
-        revealButton.Clicked += async (_, _) =>
-        {
-            if (spinning) return;
-            spinning = true; revealButton.IsEnabled = false;
-            message.Text = T("Roulement…");
-            for (var i = 0; i < 10; i++)
-            {
-                display.Text = emojis[random.Next(emojis.Length)];
-                await display.RotateToAsync(display.Rotation + 42, 65, Easing.CubicOut);
-            }
-            display.Text = emojis[random.Next(emojis.Length)];
-            await display.ScaleToAsync(1.18, 110); await display.ScaleToAsync(1, 180, Easing.SpringOut);
-            message.Text = T("Encore ?"); revealButton.IsEnabled = true; spinning = false;
-        };
-        body.Children.Add(revealButton);
     }
 
     void AddPoints(int amount)
