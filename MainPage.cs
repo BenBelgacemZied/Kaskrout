@@ -69,6 +69,8 @@ public class MainPage : ContentPage
         List<SolitaireCard>[] Tableau, Dictionary<char, List<SolitaireCard>> Foundations,
         int Score, int Moves);
     readonly VerticalStackLayout body = new() { Spacing = 16, Padding = new Thickness(20, 18, 20, 28) };
+    readonly Image pageBackdrop = new() { Aspect = Aspect.AspectFill, Opacity = 0.88, InputTransparent = true };
+    readonly BoxView backdropWash = new() { Color = Colors.White, Opacity = 0.34, InputTransparent = true };
     readonly Random random = new();
     int points = Preferences.Default.Get("points", 0);
     bool running;
@@ -82,7 +84,12 @@ public class MainPage : ContentPage
         this.language = language;
         Title = "Kaskrout";
         BackgroundColor = Paper;
-        Content = new ScrollView { Content = body };
+        var page = new Grid();
+        page.Children.Add(pageBackdrop);
+        page.Children.Add(backdropWash);
+        page.Children.Add(new ScrollView { Content = body, BackgroundColor = Colors.Transparent });
+        Content = page;
+        SetBackdrop("bg_home.jpg");
         ShowHome();
     }
 
@@ -125,6 +132,7 @@ public class MainPage : ContentPage
         running = false;
         solitaireActive = false;
         activeFeedback = null;
+        SetBackdrop("bg_home.jpg");
         BackgroundColor = Color.FromArgb("#F3F2FA");
         body.BackgroundColor = Colors.Transparent;
         body.Spacing = 15;
@@ -339,11 +347,27 @@ public class MainPage : ContentPage
         RenderGames();
     }
 
+    void SetBackdrop(string imageFile)
+    {
+        pageBackdrop.Source = imageFile;
+    }
+
     void StartPage(string title, string subtitle)
     {
         running = false;
         solitaireActive = false;
         activeFeedback = null;
+        SetBackdrop(title switch
+        {
+            "Puzzle coulissant" => "bg_puzzle.jpg",
+            "Objet manquant" => "bg_missing.jpg",
+            "Jeu des paires" => "bg_pairs.jpg",
+            "Lance le dé" => "bg_dice.jpg",
+            "Réflexe" => "bg_reflex.jpg",
+            "Démineur" => "bg_minesweeper.jpg",
+            "Pile ou face" => "bg_coin.jpg",
+            _ => "bg_home.jpg"
+        });
         BackgroundColor = Paper;
         body.BackgroundColor = Colors.Transparent;
         body.Spacing = 16;
@@ -691,11 +715,12 @@ public class MainPage : ContentPage
         running = false;
         solitaireActive = false;
         activeFeedback = null;
+        SetBackdrop("bg_solitaire.jpg");
         body.Children.Clear();
         body.Spacing = 11;
         body.Padding = new Thickness(12, 12, 12, 18);
-        BackgroundColor = Color.FromArgb("#0B5A3A");
-        body.BackgroundColor = Color.FromArgb("#0B5A3A");
+        BackgroundColor = Colors.Transparent;
+        body.BackgroundColor = Colors.Transparent;
 
         var suits = new[] { '♠', '♥', '♦', '♣' };
         var deck = (from suit in suits from rank in Enumerable.Range(1, 13) select new SolitaireCard(rank, suit))
