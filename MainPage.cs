@@ -350,6 +350,9 @@ public class MainPage : ContentPage
     void SetBackdrop(string imageFile)
     {
         pageBackdrop.Source = imageFile;
+        var isSolitaire = imageFile == "bg_solitaire.jpg";
+        pageBackdrop.Opacity = isSolitaire ? 0.98 : 0.88;
+        backdropWash.Opacity = isSolitaire ? 0.08 : 0.34;
     }
 
     void StartPage(string title, string subtitle)
@@ -790,7 +793,7 @@ public class MainPage : ContentPage
         stats.Add(Stat("TEMPS", timeLabel), 1, 0);
         stats.Add(Stat("COUPS", movesLabel), 2, 0);
 
-        var topRow = new Grid { ColumnSpacing = 6, HeightRequest = 72 };
+        var topRow = new Grid { ColumnSpacing = 6, HeightRequest = 82 };
         for (var i = 0; i < 6; i++)
             topRow.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         Border Slot(char? suit, SolitaireCard? card, Action tap, bool highlighted = false)
@@ -803,7 +806,7 @@ public class MainPage : ContentPage
                 : CardFace(card, false, false);
             var slot = new Border
             {
-                WidthRequest = 46, HeightRequest = 66, Padding = 2,
+                WidthRequest = 50, HeightRequest = 74, Padding = 2,
                 BackgroundColor = card is null ? Color.FromArgb("#14563A") : Colors.White,
                 Stroke = highlighted ? Color.FromArgb("#FFE16A") : Color.FromArgb("#91B29D"),
                 StrokeThickness = highlighted ? 2.5 : 1.2,
@@ -1055,9 +1058,9 @@ public class MainPage : ContentPage
                 if (tableau[column].Count == 0)
                 {
                     var empty = Slot(null, null, () => HandleTableauTap(columnIndex, -1), hintTargetColumn == columnIndex);
-                    AbsoluteLayout.SetLayoutBounds(empty, new Rect(0, 0, 1, 66));
+                    AbsoluteLayout.SetLayoutBounds(empty, new Rect(0, 0, 1, 74));
                     AbsoluteLayout.SetLayoutFlags(empty, AbsoluteLayoutFlags.WidthProportional);
-                    pileView.Children.Add(empty); pileView.HeightRequest = 66;
+                    pileView.Children.Add(empty); pileView.HeightRequest = 74;
                 }
                 var y = 0d;
                 var pileBottom = 0d;
@@ -1068,7 +1071,7 @@ public class MainPage : ContentPage
                     var selected = source == SolitaireSource.Tableau && sourceColumn == column && cardIndex >= sourceIndex;
                     var faceDown = card.FaceDown;
                     var cardView = faceDown ? CardBack(null) : CardFace(card, selected, ReferenceEquals(hintCard, card));
-                    var cardHeight = faceDown ? 38 : 66;
+                    var cardHeight = faceDown ? 43 : 74;
                     AbsoluteLayout.SetLayoutBounds(cardView, new Rect(0, y, 1, cardHeight));
                     AbsoluteLayout.SetLayoutFlags(cardView, AbsoluteLayoutFlags.WidthProportional);
                     var capturedIndex = cardIndex;
@@ -1081,8 +1084,9 @@ public class MainPage : ContentPage
                     }
                     pileView.Children.Add(cardView);
                     pileBottom = y + cardHeight;
-                    // Keep the classic overlapping tableau while leaving the face-up card readable.
-                    y += faceDown ? 24 : 56;
+                    // Down cards remain tightly stacked. Face-up cards overlap by only a few
+                    // pixels so their rank, suit and lower corner remain visible.
+                    y += faceDown ? 27 : 69;
                 }
                 if (tableau[column].Count > 0) pileView.HeightRequest = pileBottom + 8;
                 tableauGrid.Add(pileView, column, 0);
@@ -1092,102 +1096,18 @@ public class MainPage : ContentPage
 
         Border CardFace(SolitaireCard card, bool selected, bool hinted)
         {
-            var red = IsRedSuit(card.Suit);
-            var ink = red ? Color.FromArgb("#D71931") : Color.FromArgb("#172126");
-            Label Corner(bool inverted) => new()
+            var suitName = card.Suit switch
             {
-                Text = $"{CardRank(card)}\n{card.Suit}",
-                FontSize = 9,
-                FontAttributes = FontAttributes.Bold,
-                TextColor = ink,
-                LineHeight = 0.85,
-                LineBreakMode = LineBreakMode.NoWrap,
-                HorizontalTextAlignment = inverted ? TextAlignment.End : TextAlignment.Start,
-                VerticalTextAlignment = inverted ? TextAlignment.End : TextAlignment.Start,
-                Rotation = inverted ? 180 : 0,
-                Margin = 0
+                '♠' => "spades",
+                '♥' => "hearts",
+                '♦' => "diamonds",
+                _ => "clubs"
             };
-
-            var face = new Grid
-            {
-                Padding = new Thickness(3, 2),
-                RowDefinitions =
-                {
-                    new RowDefinition(new GridLength(13)),
-                    new RowDefinition(GridLength.Star),
-                    new RowDefinition(new GridLength(13))
-                }
-            };
-            face.Add(Corner(false), 0, 0);
-            face.Add(Corner(true), 0, 2);
-
-            var pips = new Grid { ColumnSpacing = 0, RowSpacing = 0 };
-            pips.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            pips.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            for (var row = 0; row < 5; row++)
-                pips.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-
-            if (card.Rank == 1)
-            {
-                var ace = new Label
-                {
-                    Text = card.Suit.ToString(), FontSize = 22, FontAttributes = FontAttributes.Bold,
-                    TextColor = ink, HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center
-                };
-                pips.Add(ace, 0, 0);
-                Grid.SetColumnSpan(ace, 2);
-                Grid.SetRowSpan(ace, 5);
-            }
-            else if (card.Rank >= 2 && card.Rank <= 10)
-            {
-                var positions = card.Rank switch
-                {
-                    2 => new (int Row, int Column)[] { (0, 0), (4, 1) },
-                    3 => new (int, int)[] { (0, 0), (2, -1), (4, 1) },
-                    4 => new (int, int)[] { (0, 0), (0, 1), (4, 0), (4, 1) },
-                    5 => new (int, int)[] { (0, 0), (0, 1), (2, -1), (4, 0), (4, 1) },
-                    6 => new (int, int)[] { (0, 0), (0, 1), (2, 0), (2, 1), (4, 0), (4, 1) },
-                    7 => new (int, int)[] { (0, 0), (0, 1), (1, -1), (2, 0), (2, 1), (4, 0), (4, 1) },
-                    8 => new (int, int)[] { (0, 0), (0, 1), (1, 0), (1, 1), (3, 0), (3, 1), (4, 0), (4, 1) },
-                    9 => new (int, int)[] { (0, 0), (0, 1), (1, 0), (1, 1), (2, -1), (3, 0), (3, 1), (4, 0), (4, 1) },
-                    _ => new (int, int)[] { (0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1), (3, 0), (3, 1), (4, 0), (4, 1) }
-                };
-                foreach (var (row, column) in positions)
-                {
-                    var pip = new Label
-                    {
-                        Text = card.Suit.ToString(), FontSize = 7, FontAttributes = FontAttributes.Bold,
-                        TextColor = ink, HorizontalTextAlignment = TextAlignment.Center,
-                        VerticalTextAlignment = TextAlignment.Center, LineBreakMode = LineBreakMode.NoWrap,
-                        Rotation = row >= 3 && column >= 0 ? 180 : 0, Margin = 0
-                    };
-                    var actualColumn = column < 0 ? 0 : column;
-                    pips.Add(pip, actualColumn, row);
-                    if (column < 0) Grid.SetColumnSpan(pip, 2);
-                }
-            }
-            else
-            {
-                var court = new VerticalStackLayout
-                {
-                    Spacing = -2,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    Children =
-                    {
-                        new Label { Text = CardRank(card), FontSize = 19, FontAttributes = FontAttributes.Bold, TextColor = ink, HorizontalTextAlignment = TextAlignment.Center },
-                        new Label { Text = card.Suit.ToString(), FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = ink, HorizontalTextAlignment = TextAlignment.Center }
-                    }
-                };
-                pips.Add(court, 0, 0);
-                Grid.SetColumnSpan(court, 2);
-                Grid.SetRowSpan(court, 5);
-            }
-            face.Add(pips, 0, 1);
-            var border = new Border { HeightRequest = 66, Padding = 0, BackgroundColor = Colors.White,
+            var asset = $"card_{CardRank(card).ToLowerInvariant()}_{suitName}.png";
+            var border = new Border { HeightRequest = 74, Padding = 0, BackgroundColor = Colors.White,
                 Stroke = hinted || selected ? Color.FromArgb("#FFE16A") : Color.FromArgb("#DCE4E0"), StrokeThickness = hinted || selected ? 2.5 : 1,
-                StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = face,
+                StrokeShape = new RoundRectangle { CornerRadius = 7 },
+                Content = new Image { Source = asset, Aspect = Aspect.Fill, Margin = 1 },
                 Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.42f } };
             if (selected) border.TranslationY = -5;
             return border;
@@ -1197,12 +1117,12 @@ public class MainPage : ContentPage
         {
             var inside = new Border { Margin = 3, Padding = 0, Stroke = Color.FromArgb("#F7DDE0"), StrokeThickness = 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 5 },
-                Content = new Label { Text = "✥", FontSize = 23, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#FCE8E9"), HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center } };
+                Content = new Image { Source = "card_back.png", Aspect = Aspect.AspectFill, Margin = 1 } };
             var grid = new Grid { BackgroundColor = Color.FromArgb("#C9233C"), Children = { inside } };
             if (count.HasValue) grid.Add(new Label { Text = count.Value.ToString(), FontSize = 10, FontAttributes = FontAttributes.Bold,
                 TextColor = Colors.White, BackgroundColor = Color.FromArgb("#A71930"), HorizontalTextAlignment = TextAlignment.Center,
                 VerticalTextAlignment = TextAlignment.Center, WidthRequest = 18, HeightRequest = 17, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.End }, 0, 0);
-            return new Border { WidthRequest = 46, HeightRequest = count.HasValue ? 66 : 38, Padding = 2,
+            return new Border { WidthRequest = 50, HeightRequest = count.HasValue ? 74 : 43, Padding = 2,
                 BackgroundColor = Color.FromArgb("#B51F37"), Stroke = Colors.White, StrokeThickness = 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = grid,
                 Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.4f } };

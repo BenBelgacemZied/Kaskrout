@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="350" viewBox="0 0 250 350"><rect x="4" y="4" width="242" height="342" rx="17" fill="#fffefb" stroke="#26312c" stroke-width="4"/><rect x="10" y="10" width="230" height="330" rx="13" fill="none" stroke="#d8ddd9" stroke-width="1.5"/><text x="24" y="48" font-family="DejaVu Serif,serif" font-weight="bold" font-size="37" fill="#20252d">Q</text><g transform="translate(14.0,59.0) rotate(0 11.0 11.0) scale(0.2200)" fill="#20252d"><path d="M50 8C35 8 27 24 34 36 20 28 5 38 5 52c0 17 18 25 32 16-4 17 4 27 13 30 9-3 17-13 13-30 14 9 32 1 32-16 0-14-15-24-29-16 7-12-1-28-16-28Zm-4 84h8l8 14H38Z"/></g><rect x="69" y="75" width="112" height="184" rx="16" fill="#fffdf2" stroke="#d6b95f" stroke-width="3"/><path d="M76 82h98v170H76z" fill="none" stroke="#e1d098" stroke-width="1.5"/><g><g stroke="#493a32" stroke-width="2.5" stroke-linejoin="round">
+      <path d="M78 175 Q77 126 91 91 L101 75 Q122 65 141 77 L154 96 Q169 130 166 175Z" fill="#416b9d"/>
+      <path d="M91 70 85 48l17 12 9-25 14 25 18-12-7 22Z" fill="#f1d16f" stroke="#8b6630" stroke-width="3"/><circle cx="111" cy="47" r="4" fill="#d71936"/><circle cx="125" cy="47" r="4" fill="#315c91"/>
+      <ellipse cx="118" cy="111" rx="27" ry="32" fill="#f2d0a8"/>
+      <path d="M92 108 Q91 79 117 77 Q145 78 145 107 Q136 96 126 91 Q111 103 92 108Z" fill="#392b29" stroke="none"/>
+      <path d="M107 110h4m16 0h4" stroke="#292424" stroke-width="4" stroke-linecap="round"/>
+      <path d="M119 112v10l-5 3m3 8q7 5 13-1" fill="none" stroke="#8d5648" stroke-width="2"/>
+      <path d="M88 147 118 160 148 146 163 179H74Z" fill="#fff2ce"/>
+      <path d="M74 178h88l11 58-55 17-55-17Z" fill="#416b9d"/>
+      <path d="m89 181 29 25 29-25-11 53h-36Z" fill="#f3e7d2"/>
+      <path d="M118 208v36" stroke="#d3aa4c" stroke-width="4"/>
+      <circle cx="118" cy="224" r="7" fill="#f2d078"/>
+      <g stroke="none"><g transform="translate(115.5,181.5) rotate(0 9.5 9.5) scale(0.1900)" fill="#20252d"><path d="M50 8C35 8 27 24 34 36 20 28 5 38 5 52c0 17 18 25 32 16-4 17 4 27 13 30 9-3 17-13 13-30 14 9 32 1 32-16 0-14-15-24-29-16 7-12-1-28-16-28Zm-4 84h8l8 14H38Z"/></g></g>
+      <path d="M82 250h72" stroke="#d9b960" stroke-width="4"/>
+      </g></g><g transform="rotate(180 125 167)"><g stroke="#493a32" stroke-width="2.5" stroke-linejoin="round">
+      <path d="M78 175 Q77 126 91 91 L101 75 Q122 65 141 77 L154 96 Q169 130 166 175Z" fill="#416b9d"/>
+      <path d="M91 70 85 48l17 12 9-25 14 25 18-12-7 22Z" fill="#f1d16f" stroke="#8b6630" stroke-width="3"/><circle cx="111" cy="47" r="4" fill="#d71936"/><circle cx="125" cy="47" r="4" fill="#315c91"/>
+      <ellipse cx="118" cy="111" rx="27" ry="32" fill="#f2d0a8"/>
+      <path d="M92 108 Q91 79 117 77 Q145 78 145 107 Q136 96 126 91 Q111 103 92 108Z" fill="#392b29" stroke="none"/>
+      <path d="M107 110h4m16 0h4" stroke="#292424" stroke-width="4" stroke-linecap="round"/>
+      <path d="M119 112v10l-5 3m3 8q7 5 13-1" fill="none" stroke="#8d5648" stroke-width="2"/>
+      <path d="M88 147 118 160 148 146 163 179H74Z" fill="#fff2ce"/>
+      <path d="M74 178h88l11 58-55 17-55-17Z" fill="#416b9d"/>
+      <path d="m89 181 29 25 29-25-11 53h-36Z" fill="#f3e7d2"/>
+      <path d="M118 208v36" stroke="#d3aa4c" stroke-width="4"/>
+      <circle cx="118" cy="224" r="7" fill="#f2d078"/>
+      <g stroke="none"><g transform="translate(115.5,181.5) rotate(0 9.5 9.5) scale(0.1900)" fill="#20252d"><path d="M50 8C35 8 27 24 34 36 20 28 5 38 5 52c0 17 18 25 32 16-4 17 4 27 13 30 9-3 17-13 13-30 14 9 32 1 32-16 0-14-15-24-29-16 7-12-1-28-16-28Zm-4 84h8l8 14H38Z"/></g></g>
+      <path d="M82 250h72" stroke="#d9b960" stroke-width="4"/>
+      </g></g><g transform="rotate(180 125 175)"><text x="24" y="48" font-family="DejaVu Serif,serif" font-weight="bold" font-size="37" fill="#20252d">Q</text><g transform="translate(14.0,59.0) rotate(0 11.0 11.0) scale(0.2200)" fill="#20252d"><path d="M50 8C35 8 27 24 34 36 20 28 5 38 5 52c0 17 18 25 32 16-4 17 4 27 13 30 9-3 17-13 13-30 14 9 32 1 32-16 0-14-15-24-29-16 7-12-1-28-16-28Zm-4 84h8l8 14H38Z"/></g></g></svg>
