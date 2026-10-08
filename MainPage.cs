@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 21449)
-Total output lines: 1577
-
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Layouts;
 
@@ -685,7 +682,104 @@ public class MainPage : ContentPage
             cards[i] = card; grid.Add(card, i % 3, i / 3);
         }
         body.Children.Add(status);
-        body.Children.A…1449 tokens truncated…r = card is null ? Color.FromArgb("#14563A") : Colors.White,
+        body.Children.Add(Panel(grid));
+        body.Children.Add(MakeButton("Nouvelle partie", Purple, PlayPairs));
+    }
+
+    void PlaySolitaire()
+    {
+        running = false;
+        solitaireActive = false;
+        activeFeedback = null;
+        body.Children.Clear();
+        body.Spacing = 11;
+        body.Padding = new Thickness(12, 12, 12, 18);
+        BackgroundColor = Color.FromArgb("#0B5A3A");
+        body.BackgroundColor = Color.FromArgb("#0B5A3A");
+
+        var suits = new[] { '♠', '♥', '♦', '♣' };
+        var deck = (from suit in suits from rank in Enumerable.Range(1, 13) select new SolitaireCard(rank, suit))
+            .OrderBy(_ => random.Next()).ToList();
+        var stock = new List<SolitaireCard>();
+        var waste = new List<SolitaireCard>();
+        var tableau = Enumerable.Range(0, 7).Select(_ => new List<SolitaireCard>()).ToArray();
+        var foundations = suits.ToDictionary(suit => suit, _ => new List<SolitaireCard>());
+        var moves = 0;
+        var score = 0;
+        var elapsedSeconds = 0;
+        var source = SolitaireSource.None;
+        var sourceColumn = -1;
+        var sourceIndex = -1;
+        var undoStack = new Stack<SolitaireSnapshot>();
+        SolitaireCard? hintCard = null;
+        SolitaireCard? justMovedCard = null;
+        var hintTargetColumn = -1;
+        char? hintFoundationSuit = null;
+        var status = new Label
+        {
+            Text = T("Tableau vert, une carte à la fois."), FontSize = 13, TextColor = Color.FromArgb("#D7E8DE"),
+            HorizontalTextAlignment = TextAlignment.Center, HorizontalOptions = LayoutOptions.Fill
+        };
+        var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start };
+        tableauGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+        for (var i = 0; i < 7; i++)
+            tableauGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+
+        for (var column = 0; column < 7; column++)
+        {
+            for (var row = 0; row <= column; row++)
+            {
+                var card = deck[0];
+                deck.RemoveAt(0);
+                card.FaceDown = row != column;
+                tableau[column].Add(card);
+            }
+        }
+        stock.AddRange(deck);
+
+        var scoreLabel = new Label { Text = "0", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
+        var timeLabel = new Label { Text = "00:00", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
+        var movesLabel = new Label { Text = "0", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
+        var header = new Grid { ColumnSpacing = 8, ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
+        var backButton = new Button { Text = "‹", FontSize = 30, Padding = 0, WidthRequest = 42, HeightRequest = 46,
+            BackgroundColor = Color.FromArgb("#124C35"), TextColor = Colors.White, CornerRadius = 16 };
+        backButton.Clicked += (_, _) => ShowHome();
+        var title = new Label { Text = "SOLITAIRE", FontSize = 19, FontAttributes = FontAttributes.Bold,
+            TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Center, CharacterSpacing = 1.5 };
+        var restartTop = new Button { Text = "⟳", FontSize = 24, Padding = 0, WidthRequest = 42, HeightRequest = 46,
+            BackgroundColor = Color.FromArgb("#124C35"), TextColor = Colors.White, CornerRadius = 16 };
+        restartTop.Clicked += (_, _) => PlaySolitaire();
+        header.Add(backButton, 0, 0); header.Add(title, 1, 0); header.Add(restartTop, 2, 0);
+
+        Label StatName(string label) => new() { Text = T(label), FontSize = 10, FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#B8D5C4"), HorizontalTextAlignment = TextAlignment.Center };
+        Border Stat(string name, Label value) => new()
+        {
+            BackgroundColor = Color.FromArgb("#124C35"), StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 15 }, Padding = new Thickness(7, 6),
+            Content = new VerticalStackLayout { Spacing = 1, Children = { StatName(name), value } }
+        };
+        var stats = new Grid { ColumnSpacing = 8 };
+        for (var i = 0; i < 3; i++) stats.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        stats.Add(Stat("SCORE", scoreLabel), 0, 0);
+        stats.Add(Stat("TEMPS", timeLabel), 1, 0);
+        stats.Add(Stat("COUPS", movesLabel), 2, 0);
+
+        var topRow = new Grid { ColumnSpacing = 6, HeightRequest = 72 };
+        for (var i = 0; i < 6; i++)
+            topRow.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        Border Slot(char? suit, SolitaireCard? card, Action tap, bool highlighted = false)
+        {
+            var red = suit.HasValue && IsRedSuit(suit.Value);
+            View content = card is null
+                ? new Label { Text = suit?.ToString() ?? "·", FontSize = 25, FontAttributes = FontAttributes.Bold,
+                    TextColor = suit.HasValue ? (red ? Color.FromArgb("#73BCA0") : Color.FromArgb("#92C2AB")) : Colors.White,
+                    HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }
+                : CardFace(card, false, false);
+            var slot = new Border
+            {
+                WidthRequest = 46, HeightRequest = 66, Padding = 2,
+                BackgroundColor = card is null ? Color.FromArgb("#14563A") : Colors.White,
                 Stroke = highlighted ? Color.FromArgb("#FFE16A") : Color.FromArgb("#91B29D"),
                 StrokeThickness = highlighted ? 2.5 : 1.2,
                 StrokeShape = new RoundRectangle { CornerRadius = 8 },
