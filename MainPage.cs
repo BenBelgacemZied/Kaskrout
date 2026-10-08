@@ -549,7 +549,6 @@ public class MainPage : ContentPage
                 }
                 else
                 {
-                    ShowGameFeedback(false, F("Ces cartes ne vont pas ensemble.", "Those cards do not match.", "Deze kaarten horen niet bij elkaar."), true);
                     cards[first].Text = "✦"; cards[second].Text = "✦";
                     foreach (var missed in new[] { cards[first], cards[second] })
                     {
