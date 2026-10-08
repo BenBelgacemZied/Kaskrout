@@ -16,5 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.110" />
     <MauiIcon Include="Resources\AppIcon\kaskrouticon.png" Color="#715CE8" ForegroundScale="0.72" />
+    <MauiImage Include="Resources\Images\*.jpg" />
   </ItemGroup>
 </Project>
