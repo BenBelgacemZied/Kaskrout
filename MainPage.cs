@@ -934,8 +934,7 @@ public class MainPage : ContentPage
                     var selected = source == SolitaireSource.Tableau && sourceColumn == column && cardIndex >= sourceIndex;
                     var faceDown = card.FaceDown;
                     var cardView = faceDown ? CardBack(null) : CardFace(card, selected, ReferenceEquals(hintCard, card));
-                    // Render every tableau card at full height so no card is hidden by overlap.
-                    var cardHeight = 66;
+                    var cardHeight = faceDown ? 38 : 66;
                     AbsoluteLayout.SetLayoutBounds(cardView, new Rect(0, y, 1, cardHeight));
                     AbsoluteLayout.SetLayoutFlags(cardView, AbsoluteLayoutFlags.WidthProportional);
                     var capturedIndex = cardIndex;
@@ -948,8 +947,8 @@ public class MainPage : ContentPage
                     }
                     pileView.Children.Add(cardView);
                     pileBottom = y + cardHeight;
-                    // Klondike normally fans cards with overlap; this layout keeps every card whole.
-                    y += cardHeight;
+                    // Keep the classic overlapping tableau while leaving the face-up card readable.
+                    y += faceDown ? 24 : 56;
                 }
                 if (tableau[column].Count > 0) pileView.HeightRequest = pileBottom + 8;
                 tableauGrid.Add(pileView, column, 0);
@@ -961,11 +960,20 @@ public class MainPage : ContentPage
         {
             var red = IsRedSuit(card.Suit);
             var ink = red ? Color.FromArgb("#D71931") : Color.FromArgb("#172126");
-            var face = new Grid { Padding = new Thickness(5, 4), RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
-            face.Add(new Label { Text = CardRank(card), FontSize = 14, FontAttributes = FontAttributes.Bold, TextColor = ink }, 0, 0);
-            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 25, FontAttributes = FontAttributes.Bold, TextColor = ink,
+            var face = new Grid
+            {
+                Padding = new Thickness(4, 2),
+                RowDefinitions =
+                {
+                    new RowDefinition(new GridLength(16)),
+                    new RowDefinition(GridLength.Star),
+                    new RowDefinition(new GridLength(12))
+                }
+            };
+            face.Add(new Label { Text = CardRank(card), FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = ink, LineBreakMode = LineBreakMode.NoWrap }, 0, 0);
+            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 19, FontAttributes = FontAttributes.Bold, TextColor = ink,
                 HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }, 0, 1);
-            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 11, TextColor = ink, HorizontalTextAlignment = TextAlignment.End }, 0, 2);
+            face.Add(new Label { Text = card.Suit.ToString(), FontSize = 10, TextColor = ink, HorizontalTextAlignment = TextAlignment.End }, 0, 2);
             var border = new Border { HeightRequest = 66, Padding = 0, BackgroundColor = Colors.White,
                 Stroke = hinted || selected ? Color.FromArgb("#FFE16A") : Color.FromArgb("#DCE4E0"), StrokeThickness = hinted || selected ? 2.5 : 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = face,
@@ -983,7 +991,7 @@ public class MainPage : ContentPage
             if (count.HasValue) grid.Add(new Label { Text = count.Value.ToString(), FontSize = 10, FontAttributes = FontAttributes.Bold,
                 TextColor = Colors.White, BackgroundColor = Color.FromArgb("#A71930"), HorizontalTextAlignment = TextAlignment.Center,
                 VerticalTextAlignment = TextAlignment.Center, WidthRequest = 18, HeightRequest = 17, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.End }, 0, 0);
-            return new Border { WidthRequest = 46, HeightRequest = 66, Padding = 2,
+            return new Border { WidthRequest = 46, HeightRequest = count.HasValue ? 66 : 38, Padding = 2,
                 BackgroundColor = Color.FromArgb("#B51F37"), Stroke = Colors.White, StrokeThickness = 1,
                 StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = grid,
                 Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.4f } };
