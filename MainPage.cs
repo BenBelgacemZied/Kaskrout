@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 21449)
+Total output lines: 1577
+
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Layouts;
 
@@ -125,98 +128,218 @@ public class MainPage : ContentPage
         running = false;
         solitaireActive = false;
         activeFeedback = null;
-        BackgroundColor = Paper;
+        BackgroundColor = Color.FromArgb("#F3F2FA");
         body.BackgroundColor = Colors.Transparent;
-        body.Spacing = 16;
-        body.Padding = new Thickness(20, 18, 20, 28);
+        body.Spacing = 15;
+        body.Padding = new Thickness(18, 18, 18, 28);
         body.Children.Clear();
+
+        var games = new (string Icon, string Title, string Detail, string Color, string Category, Action Play)[]
+        {
+            ("🧩", "Puzzle", "Remets les tuiles en ordre", "#EEEAFE", "Réflexion", PlayPuzzle),
+            ("👀", "Objet manquant", "Observe, puis retrouve-le", "#E4F5F1", "Réflexion", PlayMissingObject),
+            ("🎴", "Paires", "Associe les images identiques", "#FFF0E4", "Réflexion", PlayPairs),
+            ("♠️", "Solitaire", "Jeu de cartes classique", "#FFF7D9", "Cartes", PlaySolitaire),
+            ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", "Rapide", PlayDice),
+            ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", "Rapide", PlayReflex),
+            ("💎", "Démineur", "Repère les cases sûres", "#E8EEF5", "Réflexion", PlayMinesweeper),
+            ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", "Rapide", PlayCoin)
+        };
+
+        var scorePill = new Border
+        {
+            BackgroundColor = Color.FromArgb("#FFF8E6"), StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 18 },
+            Padding = new Thickness(12, 8),
+            Content = Text($"⭐ {points}", 16, true, Color.FromArgb("#A66B08"))
+        };
+        var brand = new VerticalStackLayout
+        {
+            Spacing = 1,
+            Children = { Text("KASKROUT", 19, true, Ink), Text("MINI-ARCADE", 10, true, Muted) }
+        };
+        var header = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
+            VerticalOptions = LayoutOptions.Center
+        };
+        header.Add(brand, 0, 0);
+        header.Add(scorePill, 1, 0);
+        body.Children.Add(header);
+
+        var featured = games[DateTime.Now.DayOfYear % games.Length];
+        var featuredContent = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
+            ColumnSpacing = 8
+        };
+        var featuredText = new VerticalStackLayout
+        {
+            Spacing = 5,
+            Children =
+            {
+                new Label { Text = F("DÉFI DU JOUR", "DAILY CHALLENGE", "DAGUITDAGING"), FontSize = 11,
+                    FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#EDE6FF"), HorizontalTextAlignment = TextAlignment.Start },
+                new Label { Text = F("Ton prochain défi t’attend !", "Your next challenge awaits!", "Je volgende uitdaging wacht!"), FontSize = 25, FontAttributes = FontAttributes.Bold,
+                    TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Start, LineBreakMode = LineBreakMode.WordWrap },
+                new Label { Text = F("Joue, gagne des points et passe au niveau suivant.", "Play, earn points and reach the next level.", "Speel, verdien punten en bereik het volgende niveau."), FontSize = 13,
+                    TextColor = Color.FromArgb("#EEEAFE"), HorizontalTextAlignment = TextAlignment.Start }
+            }
+        };
+        featuredContent.Add(featuredText, 0, 0);
+        featuredContent.Add(new Label { Text = featured.Icon, FontSize = 48, VerticalOptions = LayoutOptions.Center }, 1, 0);
+        var featuredButton = MakeButton(F($"Jouer à {featured.Title}  →", $"Play {featured.Title}  →", $"Speel {featured.Title}  →"), Colors.White, featured.Play, 46);
+        featuredButton.TextColor = Color.FromArgb("#5A43C7");
+        featuredButton.FontSize = 15;
+        featuredButton.CornerRadius = 15;
+        featuredButton.HorizontalOptions = LayoutOptions.Start;
+        featuredButton.Padding = new Thickness(17, 0);
         var hero = new Border
         {
-            StrokeThickness = 0, BackgroundColor = Color.FromArgb("#EEEAFE"),
-            StrokeShape = new RoundRectangle { CornerRadius = 28 },
-            Padding = new Thickness(20, 22),
+            Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
+                GradientStops = { new GradientStop(Color.FromArgb("#5942C8"), 0), new GradientStop(Color.FromArgb("#8369F4"), 1) }
+            },
+            StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 28 },
+            Padding = new Thickness(19, 18),
+            Shadow = new Shadow { Brush = Color.FromArgb("#405942C8"), Offset = new Point(0, 6), Radius = 14, Opacity = 0.30f },
+            Content = new VerticalStackLayout { Spacing = 13, Children = { featuredContent, featuredButton } }
+        };
+        body.Children.Add(hero);
+
+        var level = points / 100 + 1;
+        var progress = points % 100;
+        var progressBar = new ProgressBar { Progress = progress / 100.0, ProgressColor = Color.FromArgb("#785DEB"),
+            BackgroundColor = Color.FromArgb("#E9E6F4"), HeightRequest = 8 };
+        var progressLabels = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }
+        };
+        progressLabels.Add(new Label { Text = F($"NIVEAU {level}", $"LEVEL {level}", $"NIVEAU {level}"), FontSize = 11,
+            FontAttributes = FontAttributes.Bold, TextColor = Ink, HorizontalTextAlignment = TextAlignment.Start }, 0, 0);
+        progressLabels.Add(new Label { Text = F($"{progress} / 100 pts", $"{progress} / 100 pts", $"{progress} / 100 punten"),
+            FontSize = 11, TextColor = Muted, HorizontalTextAlignment = TextAlignment.End }, 1, 0);
+        var progressPanel = new Border
+        {
+            BackgroundColor = Colors.White, StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 19 }, Padding = new Thickness(15, 11),
             Content = new VerticalStackLayout
             {
                 Spacing = 7,
                 Children =
                 {
-                    Text("✨  KASKROUT  ✨", 15, true, Purple),
-                    Text("Une petite pause ?", 29, true),
-                    Text("Choisis un mini-défi et amuse-toi !", 15, false, Muted)
+                    progressLabels,
+                    progressBar
                 }
             }
         };
-        body.Children.Add(hero);
+        body.Children.Add(progressPanel);
 
-        var scorePill = new Border
-        {
-            HorizontalOptions = LayoutOptions.Center,
-            BackgroundColor = Colors.White,
-            Stroke = Color.FromArgb("#F1E5B7"), StrokeThickness = 1,
-            StrokeShape = new RoundRectangle { CornerRadius = 24 },
-            Padding = new Thickness(18, 8),
-            Content = Text(F($"⭐  {points} points", $"⭐  {points} points", $"⭐  {points} punten"), 17, true, Color.FromArgb("#BA841C"))
-        };
-        body.Children.Add(scorePill);
-        body.Children.Add(MakeButton(F("🌐  Langue : Français", "🌐  Language: English", "🌐  Taal: Nederlands"), Purple, SelectLanguage, 46));
-        body.Children.Add(Text("CHOISIS TON JEU", 13, true, Muted));
+        var languageButton = MakeButton(F("🌐  Français", "🌐  English", "🌐  Nederlands"), Colors.White, SelectLanguage, 44);
+        languageButton.TextColor = Purple;
+        languageButton.FontSize = 14;
+        languageButton.BorderColor = Color.FromArgb("#E5E0F5");
+        languageButton.BorderWidth = 1;
+        languageButton.CornerRadius = 15;
+        body.Children.Add(languageButton);
 
-        var games = new (string Icon, string Title, string Detail, string Color, Action Play)[]
+        var titleRow = new Grid
         {
-            ("🧩", "Puzzle", "Remets les tuiles en ordre", "#EEEAFE", PlayPuzzle),
-            ("👀", "Objet manquant", "Observe, puis retrouve-le", "#E4F5F1", PlayMissingObject),
-            ("🃏", "Paires", "Associe les images identiques", "#FFF0E4", PlayPairs),
-            ("🃏", "Solitaire", "Jeu de cartes classique", "#FFF7D9", PlaySolitaire),
-            ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", PlayDice),
-            ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", PlayReflex),
-            ("💎", "Démineur", "Repère les cases sûres", "#E8EEF5", PlayMinesweeper),
-            ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", PlayCoin)
+            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
+            Margin = new Thickness(1, 3, 1, 0)
         };
-        var grid = new Grid { ColumnSpacing = 12, RowSpacing = 12 };
+        titleRow.Add(new Label { Text = F("CHOISIS TON PROCHAIN DÉFI", "PICK YOUR NEXT CHALLENGE", "KIES JE VOLGENDE UITDAGING"),
+            FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = Ink, HorizontalTextAlignment = TextAlignment.Start, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
+        var gameCountLabel = new Label { Text = F("8 JEUX", "8 GAMES", "8 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
+            TextColor = Muted, VerticalTextAlignment = TextAlignment.Center };
+        titleRow.Add(gameCountLabel, 1, 0);
+        body.Children.Add(titleRow);
+
+        var grid = new Grid { ColumnSpacing = 11, RowSpacing = 11 };
         grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
-        for (var i = 0; i < (games.Length + 1) / 2; i++)
-            grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-
-        for (var i = 0; i < games.Length; i++)
+        var activeCategory = "Tous";
+        void RenderGames()
         {
-            var game = games[i];
-            var card = new Border
+            grid.Children.Clear();
+            grid.RowDefinitions.Clear();
+            var visibleGames = games.Where(game => activeCategory == "Tous" || game.Category == activeCategory).ToArray();
+            gameCountLabel.Text = F($"{visibleGames.Length} JEUX", $"{visibleGames.Length} GAMES", $"{visibleGames.Length} SPELLEN");
+            for (var i = 0; i < (visibleGames.Length + 1) / 2; i++)
+                grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+            for (var i = 0; i < visibleGames.Length; i++)
             {
-                BackgroundColor = Colors.White,
-                Stroke = Color.FromArgb(game.Color), StrokeThickness = 1,
-                StrokeShape = new RoundRectangle { CornerRadius = 23 },
-                Padding = new Thickness(14), HeightRequest = 168,
-                Content = new VerticalStackLayout
+                var game = visibleGames[i];
+                var cardContent = new VerticalStackLayout
                 {
-                    Spacing = 7, VerticalOptions = LayoutOptions.Center,
+                    Spacing = 5, VerticalOptions = LayoutOptions.Center,
                     Children =
                     {
                         new Border
                         {
-                            WidthRequest = 48, HeightRequest = 48,
-                            HorizontalOptions = LayoutOptions.Center,
+                            WidthRequest = 43, HeightRequest = 43, HorizontalOptions = LayoutOptions.Center,
                             BackgroundColor = Color.FromArgb(game.Color),
                             StrokeThickness = 0,
-                            StrokeShape = new RoundRectangle { CornerRadius = 18 },
-                            Content = Text(game.Icon, 27)
+                            StrokeShape = new RoundRectangle { CornerRadius = 16 },
+                            Content = Text(game.Icon, 24)
                         },
-                        Text(game.Title, 15, true),
-                        Text(game.Detail, 12, false, Muted)
+                        Text(game.Title, 14, true),
+                        Text(game.Detail, 11, false, Muted)
                     }
-                }
-            };
-            var tap = new TapGestureRecognizer();
-            tap.Tapped += async (_, _) =>
-            {
-                await card.ScaleToAsync(0.96, 70);
-                await card.ScaleToAsync(1, 110, Easing.SpringOut);
-                game.Play();
-            };
-            card.GestureRecognizers.Add(tap);
-            grid.Add(card, i % 2, i / 2);
+                };
+                var card = new Border
+                {
+                    BackgroundColor = Colors.White,
+                    Stroke = Color.FromArgb(game.Color), StrokeThickness = 1,
+                    StrokeShape = new RoundRectangle { CornerRadius = 22 },
+                    Padding = new Thickness(10, 12), HeightRequest = 143,
+                    Shadow = new Shadow { Brush = Color.FromArgb("#18202743"), Offset = new Point(0, 3), Radius = 8, Opacity = 0.12f },
+                    Content = cardContent
+                };
+                var tap = new TapGestureRecognizer();
+                tap.Tapped += async (_, _) =>
+                {
+                    await card.ScaleToAsync(0.95, 75);
+                    await card.ScaleToAsync(1, 130, Easing.SpringOut);
+                    game.Play();
+                };
+                card.GestureRecognizers.Add(tap);
+                grid.Add(card, i % 2, i / 2);
+            }
         }
+
+        var filters = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center };
+        var categories = new[] { (Key: "Tous", Fr: "Tous", En: "All", Nl: "Alles"), (Key: "Rapide", Fr: "Rapides", En: "Quick", Nl: "Snel"),
+            (Key: "Réflexion", Fr: "Réflexion", En: "Brain", Nl: "Denken"), (Key: "Cartes", Fr: "Cartes", En: "Cards", Nl: "Kaarten") };
+        foreach (var category in categories)
+        {
+            var selected = category.Key == activeCategory;
+            var chip = new Button
+            {
+                Text = F(category.Fr, category.En, category.Nl), FontSize = 12, FontAttributes = FontAttributes.Bold,
+                TextColor = selected ? Colors.White : Muted, BackgroundColor = selected ? Purple : Colors.White,
+                CornerRadius = 16, HeightRequest = 37, Padding = new Thickness(13, 0),
+                BorderColor = selected ? Purple : Color.FromArgb("#E7E4EF"), BorderWidth = 1
+            };
+            chip.Clicked += (_, _) =>
+            {
+                activeCategory = category.Key;
+                foreach (var child in filters.Children.OfType<Button>())
+                {
+                    var isSelected = child == chip;
+                    child.BackgroundColor = isSelected ? Purple : Colors.White;
+                    child.TextColor = isSelected ? Colors.White : Muted;
+                    child.BorderColor = isSelected ? Purple : Color.FromArgb("#E7E4EF");
+                }
+                RenderGames();
+            };
+            filters.Children.Add(chip);
+        }
+        body.Children.Add(filters);
         body.Children.Add(grid);
+        RenderGames();
     }
 
     void StartPage(string title, string subtitle)
@@ -562,104 +685,7 @@ public class MainPage : ContentPage
             cards[i] = card; grid.Add(card, i % 3, i / 3);
         }
         body.Children.Add(status);
-        body.Children.Add(Panel(grid));
-        body.Children.Add(MakeButton("Nouvelle partie", Purple, PlayPairs));
-    }
-
-    void PlaySolitaire()
-    {
-        running = false;
-        solitaireActive = false;
-        activeFeedback = null;
-        body.Children.Clear();
-        body.Spacing = 11;
-        body.Padding = new Thickness(12, 12, 12, 18);
-        BackgroundColor = Color.FromArgb("#0B5A3A");
-        body.BackgroundColor = Color.FromArgb("#0B5A3A");
-
-        var suits = new[] { '♠', '♥', '♦', '♣' };
-        var deck = (from suit in suits from rank in Enumerable.Range(1, 13) select new SolitaireCard(rank, suit))
-            .OrderBy(_ => random.Next()).ToList();
-        var stock = new List<SolitaireCard>();
-        var waste = new List<SolitaireCard>();
-        var tableau = Enumerable.Range(0, 7).Select(_ => new List<SolitaireCard>()).ToArray();
-        var foundations = suits.ToDictionary(suit => suit, _ => new List<SolitaireCard>());
-        var moves = 0;
-        var score = 0;
-        var elapsedSeconds = 0;
-        var source = SolitaireSource.None;
-        var sourceColumn = -1;
-        var sourceIndex = -1;
-        var undoStack = new Stack<SolitaireSnapshot>();
-        SolitaireCard? hintCard = null;
-        SolitaireCard? justMovedCard = null;
-        var hintTargetColumn = -1;
-        char? hintFoundationSuit = null;
-        var status = new Label
-        {
-            Text = T("Tableau vert, une carte à la fois."), FontSize = 13, TextColor = Color.FromArgb("#D7E8DE"),
-            HorizontalTextAlignment = TextAlignment.Center, HorizontalOptions = LayoutOptions.Fill
-        };
-        var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start };
-        tableauGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        for (var i = 0; i < 7; i++)
-            tableauGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
-
-        for (var column = 0; column < 7; column++)
-        {
-            for (var row = 0; row <= column; row++)
-            {
-                var card = deck[0];
-                deck.RemoveAt(0);
-                card.FaceDown = row != column;
-                tableau[column].Add(card);
-            }
-        }
-        stock.AddRange(deck);
-
-        var scoreLabel = new Label { Text = "0", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
-        var timeLabel = new Label { Text = "00:00", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
-        var movesLabel = new Label { Text = "0", FontSize = 22, FontAttributes = FontAttributes.Bold, TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center };
-        var header = new Grid { ColumnSpacing = 8, ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
-        var backButton = new Button { Text = "‹", FontSize = 30, Padding = 0, WidthRequest = 42, HeightRequest = 46,
-            BackgroundColor = Color.FromArgb("#124C35"), TextColor = Colors.White, CornerRadius = 16 };
-        backButton.Clicked += (_, _) => ShowHome();
-        var title = new Label { Text = "SOLITAIRE", FontSize = 19, FontAttributes = FontAttributes.Bold,
-            TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Center, CharacterSpacing = 1.5 };
-        var restartTop = new Button { Text = "⟳", FontSize = 24, Padding = 0, WidthRequest = 42, HeightRequest = 46,
-            BackgroundColor = Color.FromArgb("#124C35"), TextColor = Colors.White, CornerRadius = 16 };
-        restartTop.Clicked += (_, _) => PlaySolitaire();
-        header.Add(backButton, 0, 0); header.Add(title, 1, 0); header.Add(restartTop, 2, 0);
-
-        Label StatName(string label) => new() { Text = T(label), FontSize = 10, FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#B8D5C4"), HorizontalTextAlignment = TextAlignment.Center };
-        Border Stat(string name, Label value) => new()
-        {
-            BackgroundColor = Color.FromArgb("#124C35"), StrokeThickness = 0,
-            StrokeShape = new RoundRectangle { CornerRadius = 15 }, Padding = new Thickness(7, 6),
-            Content = new VerticalStackLayout { Spacing = 1, Children = { StatName(name), value } }
-        };
-        var stats = new Grid { ColumnSpacing = 8 };
-        for (var i = 0; i < 3; i++) stats.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
-        stats.Add(Stat("SCORE", scoreLabel), 0, 0);
-        stats.Add(Stat("TEMPS", timeLabel), 1, 0);
-        stats.Add(Stat("COUPS", movesLabel), 2, 0);
-
-        var topRow = new Grid { ColumnSpacing = 6, HeightRequest = 72 };
-        for (var i = 0; i < 6; i++)
-            topRow.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
-        Border Slot(char? suit, SolitaireCard? card, Action tap, bool highlighted = false)
-        {
-            var red = suit.HasValue && IsRedSuit(suit.Value);
-            View content = card is null
-                ? new Label { Text = suit?.ToString() ?? "·", FontSize = 25, FontAttributes = FontAttributes.Bold,
-                    TextColor = suit.HasValue ? (red ? Color.FromArgb("#73BCA0") : Color.FromArgb("#92C2AB")) : Colors.White,
-                    HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }
-                : CardFace(card, false, false);
-            var slot = new Border
-            {
-                WidthRequest = 46, HeightRequest = 66, Padding = 2,
-                BackgroundColor = card is null ? Color.FromArgb("#14563A") : Colors.White,
+        body.Children.A…1449 tokens truncated…r = card is null ? Color.FromArgb("#14563A") : Colors.White,
                 Stroke = highlighted ? Color.FromArgb("#FFE16A") : Color.FromArgb("#91B29D"),
                 StrokeThickness = highlighted ? 2.5 : 1.2,
                 StrokeShape = new RoundRectangle { CornerRadius = 8 },
