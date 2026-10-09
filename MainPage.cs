@@ -755,22 +755,18 @@ public class MainPage : ContentPage
             var content = new Grid
             {
                 ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) },
-                ColumnSpacing = 10,
+                ColumnSpacing = 10
+            };
+            content.Add(new Label { Text = "😭", FontSize = 36, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
+            content.Add(new VerticalStackLayout
+            {
+                Spacing = 1, VerticalOptions = LayoutOptions.Center,
                 Children =
                 {
-                    new Label { Text = "😭", FontSize = 36, VerticalTextAlignment = TextAlignment.Center },
-                    new VerticalStackLayout
-                    {
-                        Spacing = 1, VerticalOptions = LayoutOptions.Center,
-                        Children =
-                        {
-                            Text(F("Oh non !", "Oh no!", "O nee!"), 17, true, Color.FromArgb("#D94D68")),
-                            Text(message, 13, true, Ink)
-                        }
-                    }
+                    Text(F("Oh non !", "Oh no!", "O nee!"), 17, true, Color.FromArgb("#D94D68")),
+                    Text(message, 13, true, Ink)
                 }
-            };
-            Grid.SetColumn(content.Children[1], 1);
+            }, 1, 0);
             failureDock.Children.Clear();
             failureDock.Children.Add(new Border
             {
