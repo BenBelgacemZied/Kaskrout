@@ -4,6 +4,7 @@ public interface IGameUiHost
 {
     VerticalStackLayout Body { get; }
     Random Random { get; }
+    IDispatcher Dispatcher { get; }
     IGameSettingsStore Settings { get; }
     IPointsService Points { get; }
     string Translate(string value);

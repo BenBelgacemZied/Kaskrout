@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls.Shapes;
+
 namespace Kaskrout;
 
 public sealed class MinesweeperGame(IGameUiHost host) : GameModuleBase(host)
@@ -223,7 +225,7 @@ public sealed class MinesweeperGame(IGameUiHost host) : GameModuleBase(host)
         body.Children.Add(status);
         RefreshBoard();
 
-        Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
+        Host.Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
         {
             if (gameOver || !body.Children.Contains(boardPanel)) return false;
             if (!generated) return true;

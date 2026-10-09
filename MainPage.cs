@@ -493,6 +493,7 @@ public class MainPage : ContentPage, IGameUiHost
 
     VerticalStackLayout IGameUiHost.Body => body;
     Random IGameUiHost.Random => random;
+    IDispatcher IGameUiHost.Dispatcher => Dispatcher;
     IGameSettingsStore IGameUiHost.Settings => gameSettings;
     IPointsService IGameUiHost.Points => pointsService;
     string IGameUiHost.Translate(string value) => T(value);
