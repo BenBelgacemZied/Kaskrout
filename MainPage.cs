@@ -68,16 +68,11 @@ public class MainPage : ContentPage, IGameUiHost
     readonly Image pageBackdrop = new() { Aspect = Aspect.AspectFill, Opacity = 0.88, InputTransparent = true };
     readonly BoxView backdropWash = new() { Color = Colors.White, Opacity = 0.34, InputTransparent = true };
     readonly Random random = new();
-    readonly IGameSettingsStore gameSettings = new PreferencesGameSettingsStore();
-    readonly IPointsService pointsService;
-    readonly GameCatalog gameCatalog = GameCatalog.CreateDefault();
-    int points => pointsService.Balance;
     Border? activeFeedback;
 
     public MainPage(string language = "fr")
     {
         this.language = language;
-        pointsService = new PreferencesPointsService(gameSettings);
         pointsService = new PreferencesPointsService(gameSettings);
         Title = "Kaskrout";
         BackgroundColor = Paper;
