@@ -1096,6 +1096,8 @@ public class MainPage : ContentPage
 
         Border CardFace(SolitaireCard card, bool selected, bool hinted)
         {
+            var red = IsRedSuit(card.Suit);
+            var ink = red ? Color.FromArgb("#D71931") : Color.FromArgb("#172126");
             var suitName = card.Suit switch
             {
                 '♠' => "spades",
@@ -1104,10 +1106,25 @@ public class MainPage : ContentPage
                 _ => "clubs"
             };
             var asset = $"card_{CardRank(card).ToLowerInvariant()}_{suitName}.png";
+            var face = new Grid();
+            face.Children.Add(new Image { Source = asset, Aspect = Aspect.Fill, Margin = 1 });
+            face.Children.Add(new Label
+            {
+                Text = CardRank(card), FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = ink,
+                HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Start,
+                HorizontalTextAlignment = TextAlignment.Start, VerticalTextAlignment = TextAlignment.Start,
+                Margin = new Thickness(5, 4, 0, 0), Padding = 0
+            });
+            face.Children.Add(new Label
+            {
+                Text = card.Suit.ToString(), FontSize = 10, FontAttributes = FontAttributes.Bold, TextColor = ink,
+                HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Start,
+                HorizontalTextAlignment = TextAlignment.End, VerticalTextAlignment = TextAlignment.Start,
+                Margin = new Thickness(0, 4, 5, 0), Padding = 0
+            });
             var border = new Border { HeightRequest = 74, Padding = 0, BackgroundColor = Colors.White,
                 Stroke = hinted || selected ? Color.FromArgb("#FFE16A") : Color.FromArgb("#DCE4E0"), StrokeThickness = hinted || selected ? 2.5 : 1,
-                StrokeShape = new RoundRectangle { CornerRadius = 7 },
-                Content = new Image { Source = asset, Aspect = Aspect.Fill, Margin = 1 },
+                StrokeShape = new RoundRectangle { CornerRadius = 7 }, Content = face,
                 Shadow = new Shadow { Brush = Color.FromArgb("#50001810"), Offset = new Point(0, 3), Radius = 4, Opacity = 0.42f } };
             if (selected) border.TranslationY = -5;
             return border;
