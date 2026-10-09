@@ -1084,9 +1084,9 @@ public class MainPage : ContentPage
                     }
                     pileView.Children.Add(cardView);
                     pileBottom = y + cardHeight;
-                    // Down cards remain tightly stacked. Face-up cards overlap by only a few
-                    // pixels so their rank, suit and lower corner remain visible.
-                    y += faceDown ? 27 : 69;
+                    // Keep a narrow header visible on every card in a pile; only the last
+                    // face-up card shows its full center illustration.
+                    y += faceDown ? 18 : 22;
                 }
                 if (tableau[column].Count > 0) pileView.HeightRequest = pileBottom + 8;
                 tableauGrid.Add(pileView, column, 0);
