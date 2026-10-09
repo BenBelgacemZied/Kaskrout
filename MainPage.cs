@@ -748,6 +748,43 @@ public class MainPage : ContentPage
             Text = T("Tableau vert, une carte à la fois."), FontSize = 13, TextColor = Color.FromArgb("#D7E8DE"),
             HorizontalTextAlignment = TextAlignment.Center, HorizontalOptions = LayoutOptions.Fill
         };
+        // A permanent feedback slot keeps the tableau in the same position when a move fails.
+        var failureDock = new Grid { HeightRequest = 76, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start };
+        void ShowSolitaireFailure(string message)
+        {
+            var content = new Grid
+            {
+                ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) },
+                ColumnSpacing = 10,
+                Children =
+                {
+                    new Label { Text = "😭", FontSize = 36, VerticalTextAlignment = TextAlignment.Center },
+                    new VerticalStackLayout
+                    {
+                        Spacing = 1, VerticalOptions = LayoutOptions.Center,
+                        Children =
+                        {
+                            Text(F("Oh non !", "Oh no!", "O nee!"), 17, true, Color.FromArgb("#D94D68")),
+                            Text(message, 13, true, Ink)
+                        }
+                    }
+                }
+            };
+            Grid.SetColumn(content.Children[1], 1);
+            failureDock.Children.Clear();
+            failureDock.Children.Add(new Border
+            {
+                Background = new LinearGradientBrush
+                {
+                    StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
+                    GradientStops = { new GradientStop(Color.FromArgb("#FFE5EA"), 0), new GradientStop(Color.FromArgb("#FFF0F2"), 1) }
+                },
+                Stroke = Color.FromArgb("#FFF1B9C4"), StrokeThickness = 1.5,
+                StrokeShape = new RoundRectangle { CornerRadius = 20 }, Padding = new Thickness(12, 8),
+                Content = content
+            });
+        }
+        void ClearSolitaireFailure() => failureDock.Children.Clear();
         var tableauGrid = new Grid { ColumnSpacing = 3, RowSpacing = 0, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start };
         tableauGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         for (var i = 0; i < 7; i++)
@@ -835,6 +872,7 @@ public class MainPage : ContentPage
         body.Children.Add(stats);
         body.Children.Add(topRow);
         body.Children.Add(tableauGrid);
+        body.Children.Add(failureDock);
         body.Children.Add(status);
 
         void SaveUndo()
@@ -913,6 +951,7 @@ public class MainPage : ContentPage
 
         void SelectWaste()
         {
+            ClearSolitaireFailure();
             if (waste.Count == 0) return;
             source = source == SolitaireSource.Waste ? SolitaireSource.None : SolitaireSource.Waste;
             sourceColumn = -1; sourceIndex = waste.Count - 1;
@@ -922,6 +961,7 @@ public class MainPage : ContentPage
 
         void DrawStock()
         {
+            ClearSolitaireFailure();
             source = SolitaireSource.None; hintCard = null; hintTargetColumn = -1; hintFoundationSuit = null;
             if (stock.Count > 0)
             {
@@ -939,6 +979,7 @@ public class MainPage : ContentPage
 
         void HandleTableauTap(int column, int cardIndex)
         {
+            ClearSolitaireFailure();
             var pile = tableau[column];
             if (source != SolitaireSource.None)
             {
@@ -947,8 +988,8 @@ public class MainPage : ContentPage
                     source = SolitaireSource.None; hintCard = null; Refresh(); return;
                 }
                 if (TryMoveToTableau(column)) return;
-                status.Text = T("Déplacement impossible.");
-                ShowGameFeedback(false, F("Essaie une autre colonne.", "Try another column.", "Probeer een andere kolom."), true);
+                status.Text = "";
+                ShowSolitaireFailure(F("Essaie une autre colonne.", "Try another column.", "Probeer een andere kolom."));
                 return;
             }
 
@@ -1000,18 +1041,19 @@ public class MainPage : ContentPage
 
         void MoveToFoundation(char suit)
         {
+            ClearSolitaireFailure();
             if (source == SolitaireSource.None) return;
             List<SolitaireCard> sourcePile;
             if (source == SolitaireSource.Waste) sourcePile = waste;
             else if (source == SolitaireSource.Tableau && sourceIndex == tableau[sourceColumn].Count - 1)
                 sourcePile = tableau[sourceColumn];
-            else { status.Text = T("Déplacement impossible."); ShowGameFeedback(false, T("Déplacement impossible."), true); return; }
+            else { status.Text = ""; ShowSolitaireFailure(T("Déplacement impossible.")); return; }
 
             if (sourcePile.Count == 0) return;
             var card = sourcePile[^1];
             var foundation = foundations[suit];
             var canPlace = card.Suit == suit && (foundation.Count == 0 ? card.Rank == 1 : card.Rank == foundation[^1].Rank + 1);
-            if (!canPlace) { status.Text = T("Déplacement impossible."); ShowGameFeedback(false, T("Déplacement impossible."), true); return; }
+            if (!canPlace) { status.Text = ""; ShowSolitaireFailure(T("Déplacement impossible.")); return; }
 
             SaveUndo();
             sourcePile.RemoveAt(sourcePile.Count - 1);
