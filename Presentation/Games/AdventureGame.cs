@@ -25,6 +25,17 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
         for (var i = 0; i < Buildings.Length; i++)
             plots.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
 
+        var skyline = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto)
+            }
+        };
+        skyline.Add(new Label { Text = "🌳  🌲", FontSize = 22, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
+        skyline.Add(new Label { Text = "☀️", FontSize = 22, HorizontalTextAlignment = TextAlignment.End }, 1, 0);
+
         var scene = new Border
         {
             Background = new LinearGradientBrush
@@ -46,19 +57,7 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
                 Spacing = 7,
                 Children =
                 {
-                    new Grid
-                    {
-                        ColumnDefinitions =
-                        {
-                            new ColumnDefinition(GridLength.Star),
-                            new ColumnDefinition(GridLength.Auto)
-                        },
-                        Children =
-                        {
-                            { new Label { Text = "🌳  🌲", FontSize = 22, VerticalTextAlignment = TextAlignment.Center }, 0, 0 },
-                            { new Label { Text = "☀️", FontSize = 22, HorizontalTextAlignment = TextAlignment.End }, 1, 0 }
-                        }
-                    },
+                    skyline,
                     plots,
                     new Label
                     {
