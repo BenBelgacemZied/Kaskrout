@@ -26,6 +26,7 @@ public sealed class GameCatalog
         [GameIds.Snake] = host => new SnakeGame(host),
         [GameIds.Reflex] = host => new ReflexGame(host),
         [GameIds.Minesweeper] = host => new MinesweeperGame(host),
-        [GameIds.Coin] = host => new CoinGame(host)
+        [GameIds.Coin] = host => new CoinGame(host),
+        [GameIds.Adventure] = host => new AdventureGame(host)
     });
 }

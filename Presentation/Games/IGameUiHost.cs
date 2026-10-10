@@ -7,6 +7,7 @@ public interface IGameUiHost
     IDispatcher Dispatcher { get; }
     IGameSettingsStore Settings { get; }
     IPointsService Points { get; }
+    IWalletService Wallet { get; }
     string Translate(string value);
     string Format(string french, string english, string dutch);
     Label CreateText(string value, double size, bool bold = false, Color? color = null);

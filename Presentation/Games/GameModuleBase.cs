@@ -21,7 +21,12 @@ public abstract class GameModuleBase(IGameUiHost host) : IGameModule
     protected Border Panel(View content, Color? color = null) => Host.CreatePanel(content, color);
     protected void StartPage(string title, string subtitle) => Host.StartPage(title, subtitle);
     protected void ShowGameFeedback(bool won, string message, bool temporary = false) => Host.ShowGameFeedback(won, message, temporary);
-    protected void AddPoints(int amount) => Host.Points.Add(amount);
+    protected IWalletService Wallet => Host.Wallet;
+    protected void AddPoints(int amount)
+    {
+        Host.Points.Add(amount);
+        Host.Wallet.Credit(amount);
+    }
     protected int GetIntSetting(string key, int fallback = 0) => Host.Settings.GetInt(key, fallback);
     protected void SetIntSetting(string key, int value) => Host.Settings.SetInt(key, value);
 }

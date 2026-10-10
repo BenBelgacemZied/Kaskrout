@@ -9,13 +9,14 @@ public class MainPage : ContentPage, IGameUiHost
     readonly string language;
     readonly IGameSettingsStore gameSettings = new PreferencesGameSettingsStore();
     readonly IPointsService pointsService;
+    readonly IWalletService walletService;
     readonly GameCatalog gameCatalog = GameCatalog.CreateDefault();
     int points => pointsService.Balance;
     static readonly Dictionary<string, string[]> Translations = new()
     {
         ["Une petite pause ?"] = ["A little break?", "Even pauze?"] ,
         ["Choisis un mini-défi et amuse-toi !"] = ["Pick a mini challenge and have fun!", "Kies een mini-uitdaging en veel plezier!"],
-        ["points"] = ["points", "punten"], ["CHOISIS TON JEU"] = ["CHOOSE A GAME", "KIES EEN SPEL"],
+        ["points"] = ["points", "punten"], ["Aventure"] = ["Adventure", "Avontuur"], ["CHOISIS UNE CONSTRUCTION POUR COMMENCER."] = ["Choose a building to get started.", "Kies een gebouw om te beginnen."], ["Construis ton village"] = ["Build your village", "Bouw je dorp"], ["Joue aux mini-jeux pour gagner des pièces, puis utilise-les ici."] = ["Play mini-games to earn coins, then spend them here.", "Speel minigames om munten te verdienen en geef ze hier uit."], ["CONSTRUCTION TERMINÉE !"] = ["BUILD COMPLETE!", "BOUW VOLTOOID!"], ["Construis ton village avec les pièces gagnées dans les mini-jeux."] = ["Build your village with coins earned in mini-games.", "Bouw je dorp met munten die je in minigames verdient."], ["Budget"] = ["Budget", "Budget"], ["Maison"] = ["House", "Huis"], ["Un premier toit pour ton village."] = ["A first roof for your village.", "Een eerste dak voor je dorp."], ["Jardin"] = ["Garden", "Tuin"], ["Un coin de nature pour te détendre."] = ["A peaceful place in nature.", "Een rustig plekje in de natuur."], ["Atelier"] = ["Workshop", "Werkplaats"], ["Un atelier pour développer ton village."] = ["A workshop to grow your village.", "Een werkplaats om je dorp te laten groeien."], ["Construire"] = ["Build", "Bouwen"], ["Déjà construit ✓"] = ["Already built ✓", "Al gebouwd ✓"], ["Il te manque"] = ["You still need", "Je hebt nog nodig"], ["pièces. Joue à un mini-jeu pour en gagner."] = ["more coins. Play a mini-game to earn some.", "munten. Speel een minigame om munten te verdienen."], ["Bravo !"] = ["Well done!", "Goed gedaan!"], ["construit !"] = ["built!", "gebouwd!"], ["CHOISIS TON JEU"] = ["CHOOSE A GAME", "KIES EEN SPEL"],
         ["Puzzle"] = ["Puzzle", "Puzzel"], ["Remets les tuiles en ordre"] = ["Put the tiles in order", "Zet de tegels op volgorde"],
         ["Objet manquant"] = ["Missing object", "Ontbrekend voorwerp"], ["Observe, puis retrouve-le"] = ["Look, then find what's missing", "Kijk goed en vind wat ontbreekt"],
         ["Paires"] = ["Matching pairs", "Paren"], ["Associe les images identiques"] = ["Match the identical pictures", "Zoek de gelijke plaatjes"],
@@ -74,6 +75,7 @@ public class MainPage : ContentPage, IGameUiHost
     {
         this.language = language;
         pointsService = new PreferencesPointsService(gameSettings);
+        walletService = new PreferencesWalletService(gameSettings);
         Title = "Kaskrout";
         BackgroundColor = Paper;
         var page = new Grid();
@@ -139,7 +141,8 @@ public class MainPage : ContentPage, IGameUiHost
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", "Rapide", () => LaunchGame(GameIds.Reflex)),
             ("💎", "Démineur", "Repère les cases sûres", "#E8EEF5", "Réflexion", () => LaunchGame(GameIds.Minesweeper)),
             ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", "Rapide", () => LaunchGame(GameIds.Coin)),
-            ("🕹️", "Chasse aux oiseaux – rétro", "Vise les oiseaux et appuie pour tirer.", "#E7F4FF", "Arcade", () => LaunchGame(GameIds.BirdShooter))
+            ("🕹️", "Chasse aux oiseaux – rétro", "Vise les oiseaux et appuie pour tirer.", "#E7F4FF", "Arcade", () => LaunchGame(GameIds.BirdShooter)),
+            ("🏡", "Aventure", "Construis ton village avec les pièces gagnées dans les mini-jeux.", "#E7F2E5", "Aventure", () => LaunchGame(GameIds.Adventure))
         };
 
         var scorePill = new Border
@@ -147,7 +150,7 @@ public class MainPage : ContentPage, IGameUiHost
             BackgroundColor = Color.FromArgb("#FFF8E6"), StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 18 },
             Padding = new Thickness(12, 8),
-            Content = Text($"⭐ {points}", 16, true, Color.FromArgb("#A66B08"))
+            Content = Text($"⭐ {points}   💰 {walletService.Balance}", 15, true, Color.FromArgb("#A66B08"))
         };
         var brand = new VerticalStackLayout
         {
@@ -247,7 +250,7 @@ public class MainPage : ContentPage, IGameUiHost
         };
         titleRow.Add(new Label { Text = F("CHOISIS TON PROCHAIN DÉFI", "PICK YOUR NEXT CHALLENGE", "KIES JE VOLGENDE UITDAGING"),
             FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = Ink, HorizontalTextAlignment = TextAlignment.Start, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        var gameCountLabel = new Label { Text = F("9 JEUX", "9 GAMES", "9 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
+        var gameCountLabel = new Label { Text = F("10 JEUX", "10 GAMES", "10 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
             TextColor = Muted, VerticalTextAlignment = TextAlignment.Center };
         titleRow.Add(gameCountLabel, 1, 0);
         body.Children.Add(titleRow);
@@ -496,6 +499,7 @@ public class MainPage : ContentPage, IGameUiHost
     IDispatcher IGameUiHost.Dispatcher => Dispatcher;
     IGameSettingsStore IGameUiHost.Settings => gameSettings;
     IPointsService IGameUiHost.Points => pointsService;
+    IWalletService IGameUiHost.Wallet => walletService;
     string IGameUiHost.Translate(string value) => T(value);
     string IGameUiHost.Format(string french, string english, string dutch) => F(french, english, dutch);
     Label IGameUiHost.CreateText(string value, double size, bool bold, Color? color) => Text(value, size, bold, color);
