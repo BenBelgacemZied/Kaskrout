@@ -10,6 +10,7 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
     [
         new("house", "Maison", "Un premier toit pour ton village.", "🏠", 300),
         new("garden", "Jardin", "Un coin de nature pour te détendre.", "🌿", 150),
+        new("tent", "Tente", "Un petit abri dans le jardin.", "⛺", 120),
         new("workshop", "Atelier", "Un atelier pour développer ton village.", "🛠️", 700)
     ];
 
@@ -21,9 +22,12 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
 
         var budget = Text($"{T("Budget")} : {Wallet.Balance} 💰", 21, true, Color.FromArgb("#A66B08"));
         var status = Text("CHOISIS UNE CONSTRUCTION POUR COMMENCER.", 15, false, Muted);
-        var plots = new Grid { ColumnSpacing = 7, HeightRequest = 136 };
-        for (var i = 0; i < Buildings.Length; i++)
+        var plots = new Grid { ColumnSpacing = 7, RowSpacing = 7, HeightRequest = 220 };
+        for (var i = 0; i < 2; i++)
+        {
             plots.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            plots.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+        }
 
         var skyline = new Grid
         {
@@ -105,7 +109,7 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
                     });
                     plotContent.Children.Add(new Label
                     {
-                        Text = "🌿  🌻",
+                        Text = GetIntSetting("adventure-built-tent") == 1 ? "🌿  🌻  ⛺" : "🌿  🌻",
                         FontSize = 22,
                         HorizontalTextAlignment = TextAlignment.Center
                     });
@@ -137,23 +141,30 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
                     StrokeShape = new RoundRectangle { CornerRadius = 15 },
                     Padding = new Thickness(3),
                     Content = plotContent
-                }, i, 0);
+                }, i % 2, i / 2);
             }
         }
 
         RenderPlots();
 
+        var buildButtons = new Dictionary<string, Button>();
         foreach (var building in Buildings)
         {
             var settingKey = $"adventure-built-{building.Id}";
             var isBuilt = GetIntSetting(settingKey) == 1;
+            var needsGarden = building.Id == "tent" && GetIntSetting("adventure-built-garden") != 1;
             Button button = null!;
             button = MakeButton(
-                isBuilt ? "Déjà construit ✓" : $"{T("Construire")} · {building.Cost} 💰",
-                isBuilt ? Green : Purple,
+                isBuilt ? "Déjà construit ✓" : needsGarden ? "Construis d’abord le jardin." : $"{T("Construire")} · {building.Cost} 💰",
+                isBuilt ? Green : needsGarden ? Muted : Purple,
                 async () =>
                 {
                     if (GetIntSetting(settingKey) == 1) return;
+                    if (building.Id == "tent" && GetIntSetting("adventure-built-garden") != 1)
+                    {
+                        status.Text = T("Construis d’abord le jardin.");
+                        return;
+                    }
                     if (!Wallet.TrySpend(building.Cost))
                     {
                         var missing = building.Cost - Wallet.Balance;
@@ -168,13 +179,20 @@ public sealed class AdventureGame(IGameUiHost host) : GameModuleBase(host)
                     button.BackgroundColor = Green;
                     button.IsEnabled = false;
                     RenderPlots();
+                    if (building.Id == "garden" && buildButtons.TryGetValue("tent", out var tentButton))
+                    {
+                        tentButton.Text = $"{T("Construire")} · 120 💰";
+                        tentButton.BackgroundColor = Purple;
+                        tentButton.IsEnabled = true;
+                    }
                     status.Text = $"{T(building.Name)} — {T("CONSTRUCTION TERMINÉE !")}";
                     ShowGameFeedback(true, status.Text);
                     await scene.ScaleToAsync(1.025, 110, Easing.CubicOut);
                     await scene.ScaleToAsync(1, 150, Easing.SpringOut);
                 },
                 54);
-            if (isBuilt) button.IsEnabled = false;
+            if (isBuilt || needsGarden) button.IsEnabled = false;
+            buildButtons[building.Id] = button;
 
             body.Children.Add(Panel(new VerticalStackLayout
             {
