@@ -103,11 +103,15 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                         bombsEaten[currentPlayer]++;
 
                     if (bombPositions[targetPlayer][chipIndex])
+                    {
                         status.Text = $"{T("Bombe !")} {bombsEaten[currentPlayer]} / 3";
-                    status.TextColor = Color.FromArgb("#C6283D");
+                        status.TextColor = Color.FromArgb("#C6283D");
+                    }
                     else
+                    {
                         status.Text = T("Chip sans bombe.");
-                    status.TextColor = Color.FromArgb("#168A55");
+                        status.TextColor = Color.FromArgb("#168A55");
+                    }
                     if (button is Grid cell)
                         cell.Children.Add(ChipMarker(bombPositions[targetPlayer][chipIndex] ? "bomb" : "safe"));
 
