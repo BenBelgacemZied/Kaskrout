@@ -20,7 +20,7 @@ public class MainPage : ContentPage, IGameUiHost
         ["Puzzle"] = ["Puzzle", "Puzzel"], ["Remets les tuiles en ordre"] = ["Put the tiles in order", "Zet de tegels op volgorde"],
         ["Objet manquant"] = ["Missing object", "Ontbrekend voorwerp"], ["Observe, puis retrouve-le"] = ["Look, then find what's missing", "Kijk goed en vind wat ontbreekt"],
         ["Paires"] = ["Matching pairs", "Paren"], ["Associe les images identiques"] = ["Match the identical pictures", "Zoek de gelijke plaatjes"],
-        ["Bulles"] = ["Bubbles", "Bubbels"], ["Éclate les groupes de bulles"] = ["Pop groups of bubbles", "Laat groepen bubbels knappen"], ["Bulles zen"] = ["Zen bubbles", "Zenbubbels"], ["Éclate les bulles de même couleur."] = ["Pop bubbles of the same color.", "Laat bubbels van dezelfde kleur knappen."], ["NIVEAU"] = ["LEVEL", "LEVEL"], ["Bulles éclatées"] = ["Bubbles popped", "Bubbels geknapt"], ["Choisis un groupe d’au moins deux bulles."] = ["Choose a group of at least two bubbles.", "Kies een groep van minstens twee bubbels."], ["Niveau terminé !"] = ["Level complete!", "Level voltooid!"], ["Nouveau niveau !"] = ["New level!", "Nieuw level!"], ["Touchez pour jouer"] = ["Tap to play", "Tik om te spelen"], ["Recommencer le niveau"] = ["Restart level", "Level opnieuw starten"],
+        ["Chips piégées"] = ["Trapped chips", "Gevangen chips"], ["Cachez chacun 3 bombes parmi vos 9 chips."] = ["Each hide 3 bombs among your 9 chips.", "Verstop elk 3 bommen tussen je 9 chips."], ["Choisis 3 chips piégées."] = ["Choose 3 trapped chips.", "Kies 3 gevangen chips."], ["Bombes placées :"] = ["Bombs placed:", "Bommen geplaatst:"], ["Confirmer mes bombes"] = ["Confirm my bombs", "Mijn bommen bevestigen"], ["Passez le téléphone à Joueur"] = ["Pass the phone to Player", "Geef de telefoon aan speler"], ["Appuyez quand le joueur est prêt."] = ["Tap when the player is ready.", "Tik als de speler klaar is."], ["Je suis prêt"] = ["I’m ready", "Ik ben klaar"], ["Choisis une chip du plateau adverse."] = ["Choose a chip from your opponent’s tray.", "Kies een chip van het bord van je tegenstander."], ["Bombes mangées"] = ["Bombs eaten", "Bommen gegeten"], ["Bombe !"] = ["Bomb!", "Bom!"], ["Chip sans bombe."] = ["Safe chip.", "Veilige chip."], ["a mangé ses trois bombes et perd !"] = ["ate all three bombs and loses!", "heeft alle drie de bommen gegeten en verliest!"], ["remporte la partie !"] = ["wins the game!", "wint het spel!"], ["Joueur"] = ["Player", "Speler"],
         ["Chasse aux oiseaux – rétro"] = ["Retro bird hunt", "Retro vogeljacht"], ["Vise les oiseaux et appuie pour tirer."] = ["Aim at the birds and tap to shoot.", "Richt op de vogels en tik om te schieten."],
         ["Solitaire"] = ["Solitaire", "Patience"], ["Jeu de cartes classique"] = ["Classic card game", "Klassiek kaartspel"],
         ["Snake"] = ["Snake", "Snake"], ["Guide le serpent et mange les pommes."] = ["Guide the snake and eat the apples.", "Bestuur de slang en eet de appels."],
@@ -137,7 +137,7 @@ public class MainPage : ContentPage, IGameUiHost
             ("🧩", "Puzzle", "Remets les tuiles en ordre", "#EEEAFE", "Réflexion", () => LaunchGame(GameIds.Puzzle)),
             ("👀", "Objet manquant", "Observe, puis retrouve-le", "#E4F5F1", "Réflexion", () => LaunchGame(GameIds.MissingObject)),
             ("🎴", "Paires", "Associe les images identiques", "#FFF0E4", "Réflexion", () => LaunchGame(GameIds.Pairs)),
-            ("🫧", "Bulles", "Éclate les groupes de bulles", "#E3F6FA", "Réflexion", () => LaunchGame(GameIds.Bubbles)),
+            ("🥔", "Chips piégées", "Cache 3 bombes et défie un ami", "#FFF0D9", "Réflexion", () => LaunchGame(GameIds.ChipsBomb)),
             ("🐍", "Snake", "Guide le serpent et mange les pommes.", "#E5F6E8", "Arcade", () => LaunchGame(GameIds.Snake)),
             ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", "Rapide", () => LaunchGame(GameIds.Dice)),
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", "Rapide", () => LaunchGame(GameIds.Reflex)),
@@ -359,7 +359,7 @@ public class MainPage : ContentPage, IGameUiHost
             "Puzzle coulissant" => "bg_puzzle.jpg",
             "Objet manquant" => "bg_missing.jpg",
             "Jeu des paires" => "bg_pairs.jpg",
-            "Bulles zen" => "bg_pairs.jpg",
+            "Chips piégées" => "bg_pairs.jpg",
             "Lance le dé" => "bg_dice.jpg",
             "Réflexe" => "bg_reflex.jpg",
             "Démineur" => "bg_minesweeper.jpg",
@@ -389,7 +389,7 @@ public class MainPage : ContentPage, IGameUiHost
         body.Children.Add(top);
         var icon = title switch
         {
-            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏", "Bulles zen" => "🫧",
+            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏", "Chips piégées" => "🥔",
             "Lance le dé" => "🎲", "Réflexe" => "⚡", "Démineur" => "💎",
             "Pile ou face" => "🪙", "Chasse aux oiseaux – rétro" => "🕹️", _ => "✨"
         };
