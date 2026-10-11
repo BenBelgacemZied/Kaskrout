@@ -128,8 +128,8 @@ public class MainPage : ContentPage, IGameUiHost
         SetBackdrop("bg_home.jpg");
         BackgroundColor = Color.FromArgb("#F3F2FA");
         body.BackgroundColor = Colors.Transparent;
-        body.Spacing = 15;
-        body.Padding = new Thickness(18, 18, 18, 28);
+        body.Spacing = 7;
+        body.Padding = new Thickness(12, 6, 12, 8);
         body.Children.Clear();
 
         var games = new (string Icon, string Title, string Detail, string Color, string Category, Action Play)[]
@@ -167,84 +167,11 @@ public class MainPage : ContentPage, IGameUiHost
         header.Add(scorePill, 1, 0);
         body.Children.Add(header);
 
-        var featured = games[DateTime.Now.DayOfYear % games.Length];
-        var featuredContent = new Grid
-        {
-            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) },
-            ColumnSpacing = 8
-        };
-        var featuredText = new VerticalStackLayout
-        {
-            Spacing = 5,
-            Children =
-            {
-                new Label { Text = F("DÉFI DU JOUR", "DAILY CHALLENGE", "DAGUITDAGING"), FontSize = 11,
-                    FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#EDE6FF"), HorizontalTextAlignment = TextAlignment.Start },
-                new Label { Text = F("Ton prochain défi t’attend !", "Your next challenge awaits!", "Je volgende uitdaging wacht!"), FontSize = 25, FontAttributes = FontAttributes.Bold,
-                    TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Start, LineBreakMode = LineBreakMode.WordWrap },
-                new Label { Text = F("Joue, gagne des points et passe au niveau suivant.", "Play, earn points and reach the next level.", "Speel, verdien punten en bereik het volgende niveau."), FontSize = 13,
-                    TextColor = Color.FromArgb("#EEEAFE"), HorizontalTextAlignment = TextAlignment.Start }
-            }
-        };
-        featuredContent.Add(featuredText, 0, 0);
-        if (featured.Title == "Chips piégées")
-            featuredContent.Add(new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 68, HeightRequest = 60, VerticalOptions = LayoutOptions.Center }, 1, 0);
-        else
-            featuredContent.Add(new Label { Text = featured.Icon, FontSize = 48, VerticalOptions = LayoutOptions.Center }, 1, 0);
-        var featuredButton = MakeButton(F($"Jouer à {featured.Title}  →", $"Play {featured.Title}  →", $"Speel {featured.Title}  →"), Colors.White, featured.Play, 46);
-        featuredButton.TextColor = Color.FromArgb("#5A43C7");
-        featuredButton.FontSize = 15;
-        featuredButton.CornerRadius = 15;
-        featuredButton.HorizontalOptions = LayoutOptions.Start;
-        featuredButton.Padding = new Thickness(17, 0);
-        var hero = new Border
-        {
-            Background = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
-                GradientStops = { new GradientStop(Color.FromArgb("#5942C8"), 0), new GradientStop(Color.FromArgb("#8369F4"), 1) }
-            },
-            StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 28 },
-            Padding = new Thickness(19, 18),
-            Shadow = new Shadow { Brush = Color.FromArgb("#405942C8"), Offset = new Point(0, 6), Radius = 14, Opacity = 0.30f },
-            Content = new VerticalStackLayout { Spacing = 13, Children = { featuredContent, featuredButton } }
-        };
-        body.Children.Add(hero);
-
-        var level = points / 100 + 1;
-        var progress = points % 100;
-        var progressBar = new ProgressBar { Progress = progress / 100.0, ProgressColor = Color.FromArgb("#785DEB"),
-            BackgroundColor = Color.FromArgb("#E9E6F4"), HeightRequest = 8 };
-        var progressLabels = new Grid
-        {
-            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }
-        };
-        progressLabels.Add(new Label { Text = F($"NIVEAU {level}", $"LEVEL {level}", $"NIVEAU {level}"), FontSize = 11,
-            FontAttributes = FontAttributes.Bold, TextColor = Ink, HorizontalTextAlignment = TextAlignment.Start }, 0, 0);
-        progressLabels.Add(new Label { Text = F($"{progress} / 100 pts", $"{progress} / 100 pts", $"{progress} / 100 punten"),
-            FontSize = 11, TextColor = Muted, HorizontalTextAlignment = TextAlignment.End }, 1, 0);
-        var progressPanel = new Border
-        {
-            BackgroundColor = Colors.White, StrokeThickness = 0,
-            StrokeShape = new RoundRectangle { CornerRadius = 19 }, Padding = new Thickness(15, 11),
-            Content = new VerticalStackLayout
-            {
-                Spacing = 7,
-                Children =
-                {
-                    progressLabels,
-                    progressBar
-                }
-            }
-        };
-        body.Children.Add(progressPanel);
-
-        var languageButton = MakeButton(F("🌐  Français", "🌐  English", "🌐  Nederlands"), Colors.White, SelectLanguage, 44);
-        languageButton.TextColor = Purple;
+        var languageButton = MakeButton(F("🌐 Français", "🌐 English", "🌐 Nederlands"), Purple, SelectLanguage, 36);
+        languageButton.TextColor = Colors.White;
         languageButton.FontSize = 14;
-        languageButton.BorderColor = Color.FromArgb("#E5E0F5");
-        languageButton.BorderWidth = 1;
-        languageButton.CornerRadius = 15;
+        languageButton.BorderWidth = 0;
+        languageButton.CornerRadius = 13;
         body.Children.Add(languageButton);
 
         var titleRow = new Grid
@@ -259,7 +186,7 @@ public class MainPage : ContentPage, IGameUiHost
         titleRow.Add(gameCountLabel, 1, 0);
         body.Children.Add(titleRow);
 
-        var grid = new Grid { ColumnSpacing = 11, RowSpacing = 11 };
+        var grid = new Grid { ColumnSpacing = 7, RowSpacing = 6 };
         grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         var activeCategory = "Tous";
@@ -276,33 +203,23 @@ public class MainPage : ContentPage, IGameUiHost
             {
                 var game = visibleGames[i];
                 View gameIcon = game.Title == "Chips piégées"
-                    ? new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 44, HeightRequest = 36 }
-                    : Text(game.Icon, 30);
+                    ? new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 30, HeightRequest = 25 }
+                    : Text(game.Icon, 22);
                 var iconBadge = new Border
                 {
-                    WidthRequest = 58, HeightRequest = 58, HorizontalOptions = LayoutOptions.Center,
+                    WidthRequest = 38, HeightRequest = 38, HorizontalOptions = LayoutOptions.Center,
                     BackgroundColor = Color.FromArgb("#35FFFFFF"),
                     Stroke = Color.FromArgb("#65FFFFFF"), StrokeThickness = 1,
                     StrokeShape = new RoundRectangle { CornerRadius = 19 },
                     Content = gameIcon
                 };
-                var categoryBadge = new Border
-                {
-                    BackgroundColor = Color.FromArgb("#28FFFFFF"), StrokeThickness = 0,
-                    StrokeShape = new RoundRectangle { CornerRadius = 10 }, Padding = new Thickness(8, 3),
-                    HorizontalOptions = LayoutOptions.Center,
-                    Content = new Label { Text = F(game.Category == "Duo" ? "À DEUX" : game.Category.ToUpperInvariant(),
-                        game.Category == "Duo" ? "TWO PLAYER" : game.Category.ToUpperInvariant(),
-                        game.Category == "Duo" ? "MET TWEE" : game.Category.ToUpperInvariant()),
-                        FontSize = 9, FontAttributes = FontAttributes.Bold, TextColor = Colors.White }
-                };
                 var cardContent = new VerticalStackLayout
                 {
-                    Spacing = 7, VerticalOptions = LayoutOptions.Center,
-                    Children = { categoryBadge, iconBadge,
-                        new Label { Text = T(game.Title), FontSize = 15, FontAttributes = FontAttributes.Bold,
+                    Spacing = 3, VerticalOptions = LayoutOptions.Center,
+                    Children = { iconBadge,
+                        new Label { Text = T(game.Title), FontSize = 12, FontAttributes = FontAttributes.Bold,
                             TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center },
-                        new Label { Text = T(game.Detail), FontSize = 11, TextColor = Color.FromArgb("#EFFFFFFF"),
+                        new Label { Text = T(game.Detail), FontSize = 9, TextColor = Color.FromArgb("#EFFFFFFF"),
                             HorizontalTextAlignment = TextAlignment.Center, LineBreakMode = LineBreakMode.WordWrap, MaxLines = 2 } }
                 };
                 var card = new Border
@@ -315,8 +232,8 @@ public class MainPage : ContentPage, IGameUiHost
                     },
                     Stroke = Color.FromArgb("#75FFFFFF"), StrokeThickness = 1,
                     StrokeShape = new RoundRectangle { CornerRadius = 25 },
-                    Padding = new Thickness(11, 12), HeightRequest = 178,
-                    Shadow = new Shadow { Brush = Color.FromArgb("#4838445D"), Offset = new Point(0, 5), Radius = 13, Opacity = 0.3f },
+                    Padding = new Thickness(6, 4), HeightRequest = 101,
+                    Shadow = new Shadow { Brush = Color.FromArgb("#4838445D"), Offset = new Point(0, 3), Radius = 8, Opacity = 0.25f },
                     Content = cardContent
                 };
                 var tap = new TapGestureRecognizer();
@@ -331,17 +248,17 @@ public class MainPage : ContentPage, IGameUiHost
             }
         }
 
-        var filters = new HorizontalStackLayout { Spacing = 8, Padding = new Thickness(1, 0, 2, 0) };
+        var filters = new HorizontalStackLayout { Spacing = 5, Padding = new Thickness(1, 0, 2, 0) };
         var categories = new[] { (Key: "Tous", Fr: "Tous", En: "All", Nl: "Alles"), (Key: "Rapide", Fr: "Rapides", En: "Quick", Nl: "Snel"),
-            (Key: "Réflexion", Fr: "Réflexion", En: "Brain", Nl: "Denken"), (Key: "Cartes", Fr: "Cartes", En: "Cards", Nl: "Kaarten"), (Key: "Arcade", Fr: "Arcade", En: "Arcade", Nl: "Arcade"), (Key: "Duo", Fr: "À deux", En: "Two player", Nl: "Met twee") };
+            (Key: "Réflexion", Fr: "Réflexion", En: "Brain", Nl: "Denken"), (Key: "Arcade", Fr: "Arcade", En: "Arcade", Nl: "Arcade"), (Key: "Duo", Fr: "À deux", En: "Two player", Nl: "Met twee") };
         foreach (var category in categories)
         {
             var selected = category.Key == activeCategory;
             var chip = new Button
             {
-                Text = F(category.Fr, category.En, category.Nl), FontSize = 12, FontAttributes = FontAttributes.Bold,
+                Text = F(category.Fr, category.En, category.Nl), FontSize = 10, FontAttributes = FontAttributes.Bold,
                 TextColor = selected ? Colors.White : Muted, BackgroundColor = selected ? Purple : Colors.White,
-                CornerRadius = 16, HeightRequest = 37, Padding = new Thickness(13, 0),
+                CornerRadius = 14, HeightRequest = 31, Padding = new Thickness(9, 0),
                 BorderColor = selected ? Purple : Color.FromArgb("#E7E4EF"), BorderWidth = 1
             };
             chip.Clicked += (_, _) =>
