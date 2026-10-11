@@ -151,7 +151,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
     private static View ChipView(string text, Action tapped)
     {
         var grid = new Grid { WidthRequest = 78, HeightRequest = 70 };
-        var crisp = new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 70, HeightRequest = 58,
+        var crisp = new Image { Source = "chips.png", Aspect = Aspect.AspectFit, WidthRequest = 70, HeightRequest = 58,
             HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
         var tap = new TapGestureRecognizer();
         tap.Tapped += (_, _) => tapped();
@@ -164,66 +164,4 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
     }
 }
 
-public sealed class CrispDrawable : IDrawable
-{
-    static PathF ChipShape(float width, float height, float inset = 0)
-    {
-        var path = new PathF();
-        const int points = 64;
-        for (var i = 0; i <= points; i++)
-        {
-            var angle = (float)(Math.PI * 2 * i / points);
-            var ripple = 1f + .045f * MathF.Sin(angle * 9f) + .018f * MathF.Sin(angle * 17f);
-            var x = MathF.Cos(angle) * (width * .5f - inset) * ripple;
-            var y = MathF.Sin(angle) * (height * .5f - inset) * ripple;
-            if (i == 0) path.MoveTo(x, y);
-            else path.LineTo(x, y);
-        }
-        path.Close();
-        return path;
-    }
-
-    static void DrawSingleChip(ICanvas canvas, float width, float height, Color edge, Color center, float offsetX, float offsetY, float angle)
-    {
-        canvas.SaveState();
-        canvas.Translate(offsetX, offsetY);
-        canvas.Rotate(angle);
-        canvas.SetShadow(new SizeF(0, 2), 2, Color.FromArgb("#6644260B"));
-        canvas.FillColor = edge;
-        canvas.FillPath(ChipShape(width, height));
-        canvas.SetShadow(new SizeF(0, 0), 0, Colors.Transparent);
-        canvas.FillColor = center;
-        canvas.FillPath(ChipShape(width - 6, height - 6, 1));
-        canvas.StrokeColor = Color.FromArgb("#D99B3C");
-        canvas.StrokeSize = 1.1f;
-        canvas.DrawPath(ChipShape(width - 5, height - 5, 1));
-        canvas.StrokeColor = Color.FromArgb("#FFF0B2");
-        canvas.StrokeSize = 1.5f;
-        for (var row = -1; row <= 1; row++)
-        {
-            var y = row * height * .16f;
-            canvas.DrawLine(-width * .30f, y, -width * .11f, y + height * .04f);
-            canvas.DrawLine(-width * .11f, y + height * .04f, width * .08f, y - height * .035f);
-            canvas.DrawLine(width * .08f, y - height * .035f, width * .29f, y + height * .012f);
-        }
-        canvas.FillColor = Color.FromArgb("#B87727");
-        foreach (var p in new[] { new PointF(-.28f,-.12f), new PointF(.22f,-.13f), new PointF(-.07f,.12f), new PointF(.29f,.10f), new PointF(.02f,-.20f) })
-            canvas.FillCircle(p.X * width, p.Y * height, Math.Max(1.2f, width * .017f));
-        canvas.RestoreState();
-    }
-
-    public void Draw(ICanvas canvas, RectF dirtyRect)
-    {
-        canvas.SaveState();
-        canvas.Translate(dirtyRect.Center.X, dirtyRect.Center.Y);
-        var width = dirtyRect.Width * .82f;
-        var height = dirtyRect.Height * .55f;
-        DrawSingleChip(canvas, width * .90f, height * .94f, Color.FromArgb("#BA762E"), Color.FromArgb("#D99D42"),
-            -width * .09f, height * .15f, -17);
-        DrawSingleChip(canvas, width * .94f, height * .95f, Color.FromArgb("#C58131"), Color.FromArgb("#E8B954"),
-            width * .08f, height * .07f, 11);
-        DrawSingleChip(canvas, width, height, Color.FromArgb("#D79A35"), Color.FromArgb("#F8D77A"),
-            -width * .02f, -height * .08f, -5);
-        canvas.RestoreState();
-    }
 }

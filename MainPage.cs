@@ -203,7 +203,7 @@ public class MainPage : ContentPage, IGameUiHost
             {
                 var game = visibleGames[i];
                 View gameIcon = game.Title == "Chips piégées"
-                    ? new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 30, HeightRequest = 25 }
+                    ? new Image { Source = "chips.png", Aspect = Aspect.AspectFit, WidthRequest = 30, HeightRequest = 25 }
                     : Text(game.Icon, 22);
                 var iconBadge = new Border
                 {
@@ -337,7 +337,7 @@ public class MainPage : ContentPage, IGameUiHost
         };
         heroGrid.Add(new Border { WidthRequest = 62, HeightRequest = 62, BackgroundColor = Colors.White,
             StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 21 },
-            Content = title == "Chips piégées" ? new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 48, HeightRequest = 42 } : Text(icon, 34) }, 0, 0);
+            Content = title == "Chips piégées" ? new Image { Source = "chips.png", Aspect = Aspect.AspectFit, WidthRequest = 48, HeightRequest = 42 } : Text(icon, 34) }, 0, 0);
         heroGrid.Add(new VerticalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center,
             Children = { Text(title, 22, true, Ink), Text(subtitle, 13, false, Muted) } }, 1, 0);
         var hero = new Border
