@@ -134,16 +134,16 @@ public class MainPage : ContentPage, IGameUiHost
 
         var games = new (string Icon, string Title, string Detail, string Color, string Category, Action Play)[]
         {
-            ("🧩", "Puzzle", "Remets les tuiles en ordre", #7158E8, "Réflexion", () => LaunchGame(GameIds.Puzzle)),
-            ("👀", "Objet manquant", "Observe, puis retrouve-le", #149C85, "Réflexion", () => LaunchGame(GameIds.MissingObject)),
-            ("🎴", "Paires", "Associe les images identiques", #E96F4C, "Réflexion", () => LaunchGame(GameIds.Pairs)),
+            ("🧩", "Puzzle", "Remets les tuiles en ordre", "#7158E8", "Réflexion", () => LaunchGame(GameIds.Puzzle)),
+            ("👀", "Objet manquant", "Observe, puis retrouve-le", "#149C85", "Réflexion", () => LaunchGame(GameIds.MissingObject)),
+            ("🎴", "Paires", "Associe les images identiques", "#E96F4C", "Réflexion", () => LaunchGame(GameIds.Pairs)),
             ("", "Chips piégées", "Cache 3 bombes et défie un ami", "#D98218", "Duo", () => LaunchGame(GameIds.ChipsBomb)),
-            ("🐍", "Snake", "Guide le serpent et mange les pommes.", #29985E, "Arcade", () => LaunchGame(GameIds.Snake)),
-            ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", #347DD3, "Rapide", () => LaunchGame(GameIds.Dice)),
-            ("⚡", "Réflexe", "Attends le vert et appuie", #D84E70, "Rapide", () => LaunchGame(GameIds.Reflex)),
-            ("💎", "Démineur", "Repère les cases sûres", #526B88, "Réflexion", () => LaunchGame(GameIds.Minesweeper)),
-            ("🪙", "Pile ou face", "La pièce choisit pour toi", #A96D12, "Rapide", () => LaunchGame(GameIds.Coin)),
-            ("🕹️", "Chasse aux oiseaux – rétro", "Vise les oiseaux et appuie pour tirer.", #2384AF, "Arcade", () => LaunchGame(GameIds.BirdShooter)),
+            ("🐍", "Snake", "Guide le serpent et mange les pommes.", "#29985E", "Arcade", () => LaunchGame(GameIds.Snake)),
+            ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#347DD3", "Rapide", () => LaunchGame(GameIds.Dice)),
+            ("⚡", "Réflexe", "Attends le vert et appuie", "#D84E70", "Rapide", () => LaunchGame(GameIds.Reflex)),
+            ("💎", "Démineur", "Repère les cases sûres", "#526B88", "Réflexion", () => LaunchGame(GameIds.Minesweeper)),
+            ("🪙", "Pile ou face", "La pièce choisit pour toi", "#A96D12", "Rapide", () => LaunchGame(GameIds.Coin)),
+            ("🕹️", "Chasse aux oiseaux – rétro", "Vise les oiseaux et appuie pour tirer.", "#2384AF", "Arcade", () => LaunchGame(GameIds.BirdShooter)),
                     };
 
         var scorePill = new Border

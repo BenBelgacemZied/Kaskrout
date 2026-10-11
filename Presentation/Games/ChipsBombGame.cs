@@ -124,7 +124,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
 
                     await Task.Delay(650);
                     ShowPassScreen(1 - currentPlayer, ShowTurn);
-                };
+                });
                 grid.Add(button, chipIndex % 3, chipIndex / 3);
             }
 
