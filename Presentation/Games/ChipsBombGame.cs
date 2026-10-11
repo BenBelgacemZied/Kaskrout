@@ -39,7 +39,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             for (var index = 0; index < ChipsPerPlayer; index++)
             {
                 var chipIndex = index;
-                var button = ChipView(selections[player][chipIndex] ? "💣" : "", () =>
+                var button = ChipView(selections[player][chipIndex] ? "bomb" : "", () =>
                 {
                     if (selections[player][chipIndex]) selections[player][chipIndex] = false;
                     else if (selections[player].Count(chosen => chosen) < BombsPerPlayer) selections[player][chipIndex] = true;
@@ -95,7 +95,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             {
                 var chipIndex = index;
                 View button = null!;
-                button = ChipView(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "💥" : "✓") : "", async () =>
+                button = ChipView(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "bomb" : "safe") : "", async () =>
                 {
                     if (gameOver || eaten[targetPlayer][chipIndex]) return;
                     eaten[targetPlayer][chipIndex] = true;
@@ -107,9 +107,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                     else
                         status.Text = T("Chip sans bombe.");
                     if (button is Grid cell)
-                        cell.Children.Add(new Label { Text = bombPositions[targetPlayer][chipIndex] ? "💥" : "✓",
-                            FontSize = 25, HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center,
-                            TextColor = Color.FromArgb("#D94D45") });
+                        cell.Children.Add(ChipMarker(bombPositions[targetPlayer][chipIndex] ? "bomb" : "safe"));
 
                     if (bombsEaten[currentPlayer] >= BombsPerPlayer)
                     {
@@ -129,6 +127,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             }
 
             playArea.Children.Add(Panel(grid, Color.FromArgb("#FFF8E8")));
+            playArea.Children.Add(Text(Format("Rouge : bombe • Vert : chip sûre", "Red: bomb • Green: safe chip", "Rood: bom • Groen: veilige chip"), 12, true, Color.FromArgb("#40516B")));
             status.Text = T("Choisis une chip du plateau adverse.");
         }
 
@@ -158,8 +157,35 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
         crisp.GestureRecognizers.Add(tap);
         grid.Children.Add(crisp);
         if (!string.IsNullOrEmpty(text))
-            grid.Children.Add(new Label { Text = text, FontSize = 27, HorizontalTextAlignment = TextAlignment.Center,
-                VerticalTextAlignment = TextAlignment.Center, InputTransparent = true, TextColor = Color.FromArgb("#D94D45") });
+            grid.Children.Add(ChipMarker(text));
         return grid;
+    }
+
+    private static View ChipMarker(string state)
+    {
+        var isBomb = state == "bomb";
+        var badge = new Border
+        {
+            WidthRequest = 36,
+            HeightRequest = 36,
+            Padding = 0,
+            BackgroundColor = Color.FromArgb(isBomb ? "#C6283D" : "#168A55"),
+            Stroke = Colors.White,
+            StrokeThickness = 2,
+            StrokeShape = new RoundRectangle { CornerRadius = 18 },
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Shadow = new Shadow { Brush = Color.FromArgb("#66000000"), Offset = new Point(0, 2), Radius = 4, Opacity = 0.55f },
+            Content = new Label
+            {
+                Text = isBomb ? "!" : "✓",
+                FontSize = isBomb ? 24 : 22,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White,
+                HorizontalTextAlignment = TextAlignment.Center,
+                VerticalTextAlignment = TextAlignment.Center
+            }
+        };
+        return badge;
     }
 }
