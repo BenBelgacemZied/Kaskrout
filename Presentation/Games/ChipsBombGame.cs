@@ -50,7 +50,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             }
 
             UpdateCounter();
-            confirm = MakeButton("Confirmer mes bombes", Purple, () =>
+            confirm = MakeButton("Confirmer mes bombes", Color.FromArgb("#2864C5"), () =>
             {
                 if (selections[player].Count(chosen => chosen) != BombsPerPlayer) return;
                 Array.Copy(selections[player], bombPositions[player], ChipsPerPlayer);
