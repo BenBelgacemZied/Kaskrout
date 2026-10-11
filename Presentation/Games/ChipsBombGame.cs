@@ -133,7 +133,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             }
 
             playArea.Children.Add(Panel(grid, Color.FromArgb("#FFF8E8")));
-            playArea.Children.Add(Text(Format("Rouge : bombe • Vert : chip sûre", "Red: bomb • Green: safe chip", "Rood: bom • Groen: veilige chip"), 12, true, Color.FromArgb("#40516B")));
+            playArea.Children.Add(Text($"🔴 {T("Bombe")} • 🟢 {T("Chip sûre")}", 12, true, Color.FromArgb("#40516B")));
             status.Text = T("Choisis une chip du plateau adverse.");
             status.TextColor = Purple;
         }
