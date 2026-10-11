@@ -409,7 +409,7 @@ public class MainPage : ContentPage, IGameUiHost
         body.Children.Add(top);
         var icon = title switch
         {
-            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏", "Chips piégées" => "🥔",
+            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏", "Chips piégées" => "",
             "Lance le dé" => "🎲", "Réflexe" => "⚡", "Démineur" => "💎",
             "Pile ou face" => "🪙", "Chasse aux oiseaux – rétro" => "🕹️", _ => "✨"
         };
@@ -419,7 +419,8 @@ public class MainPage : ContentPage, IGameUiHost
             ColumnSpacing = 14
         };
         heroGrid.Add(new Border { WidthRequest = 62, HeightRequest = 62, BackgroundColor = Colors.White,
-            StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 21 }, Content = Text(icon, 34) }, 0, 0);
+            StrokeThickness = 0, StrokeShape = new RoundRectangle { CornerRadius = 21 },
+            Content = title == "Chips piégées" ? new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 48, HeightRequest = 42 } : Text(icon, 34) }, 0, 0);
         heroGrid.Add(new VerticalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center,
             Children = { Text(title, 22, true, Ink), Text(subtitle, 13, false, Muted) } }, 1, 0);
         var hero = new Border
