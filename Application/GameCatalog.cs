@@ -21,6 +21,7 @@ public sealed class GameCatalog
         [GameIds.Puzzle] = host => new PuzzleGame(host),
         [GameIds.MissingObject] = host => new MissingObjectGame(host),
         [GameIds.Pairs] = host => new PairsGame(host),
+        [GameIds.Bubbles] = host => new BubblesGame(host),
         [GameIds.Dice] = host => new DiceGame(host),
         [GameIds.BirdShooter] = host => new BirdShooterGame(host),
         [GameIds.Snake] = host => new SnakeGame(host),

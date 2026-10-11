@@ -20,6 +20,7 @@ public class MainPage : ContentPage, IGameUiHost
         ["Puzzle"] = ["Puzzle", "Puzzel"], ["Remets les tuiles en ordre"] = ["Put the tiles in order", "Zet de tegels op volgorde"],
         ["Objet manquant"] = ["Missing object", "Ontbrekend voorwerp"], ["Observe, puis retrouve-le"] = ["Look, then find what's missing", "Kijk goed en vind wat ontbreekt"],
         ["Paires"] = ["Matching pairs", "Paren"], ["Associe les images identiques"] = ["Match the identical pictures", "Zoek de gelijke plaatjes"],
+        ["Bulles"] = ["Bubbles", "Bubbels"], ["Éclate les groupes de bulles"] = ["Pop groups of bubbles", "Laat groepen bubbels knappen"], ["Bulles zen"] = ["Zen bubbles", "Zenbubbels"], ["Éclate les bulles de même couleur."] = ["Pop bubbles of the same color.", "Laat bubbels van dezelfde kleur knappen."], ["NIVEAU"] = ["LEVEL", "LEVEL"], ["Bulles éclatées"] = ["Bubbles popped", "Bubbels geknapt"], ["Choisis un groupe d’au moins deux bulles."] = ["Choose a group of at least two bubbles.", "Kies een groep van minstens twee bubbels."], ["Niveau terminé !"] = ["Level complete!", "Level voltooid!"], ["Nouveau niveau !"] = ["New level!", "Nieuw level!"], ["Touchez pour jouer"] = ["Tap to play", "Tik om te spelen"], ["Recommencer le niveau"] = ["Restart level", "Level opnieuw starten"],
         ["Chasse aux oiseaux – rétro"] = ["Retro bird hunt", "Retro vogeljacht"], ["Vise les oiseaux et appuie pour tirer."] = ["Aim at the birds and tap to shoot.", "Richt op de vogels en tik om te schieten."],
         ["Solitaire"] = ["Solitaire", "Patience"], ["Jeu de cartes classique"] = ["Classic card game", "Klassiek kaartspel"],
         ["Snake"] = ["Snake", "Snake"], ["Guide le serpent et mange les pommes."] = ["Guide the snake and eat the apples.", "Bestuur de slang en eet de appels."],
@@ -136,6 +137,7 @@ public class MainPage : ContentPage, IGameUiHost
             ("🧩", "Puzzle", "Remets les tuiles en ordre", "#EEEAFE", "Réflexion", () => LaunchGame(GameIds.Puzzle)),
             ("👀", "Objet manquant", "Observe, puis retrouve-le", "#E4F5F1", "Réflexion", () => LaunchGame(GameIds.MissingObject)),
             ("🎴", "Paires", "Associe les images identiques", "#FFF0E4", "Réflexion", () => LaunchGame(GameIds.Pairs)),
+            ("🫧", "Bulles", "Éclate les groupes de bulles", "#E3F6FA", "Réflexion", () => LaunchGame(GameIds.Bubbles)),
             ("🐍", "Snake", "Guide le serpent et mange les pommes.", "#E5F6E8", "Arcade", () => LaunchGame(GameIds.Snake)),
             ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", "Rapide", () => LaunchGame(GameIds.Dice)),
             ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", "Rapide", () => LaunchGame(GameIds.Reflex)),
@@ -250,7 +252,7 @@ public class MainPage : ContentPage, IGameUiHost
         };
         titleRow.Add(new Label { Text = F("CHOISIS TON PROCHAIN DÉFI", "PICK YOUR NEXT CHALLENGE", "KIES JE VOLGENDE UITDAGING"),
             FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = Ink, HorizontalTextAlignment = TextAlignment.Start, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        var gameCountLabel = new Label { Text = F("10 JEUX", "10 GAMES", "10 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
+        var gameCountLabel = new Label { Text = F("11 JEUX", "11 GAMES", "11 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
             TextColor = Muted, VerticalTextAlignment = TextAlignment.Center };
         titleRow.Add(gameCountLabel, 1, 0);
         body.Children.Add(titleRow);
@@ -357,6 +359,7 @@ public class MainPage : ContentPage, IGameUiHost
             "Puzzle coulissant" => "bg_puzzle.jpg",
             "Objet manquant" => "bg_missing.jpg",
             "Jeu des paires" => "bg_pairs.jpg",
+            "Bulles zen" => "bg_pairs.jpg",
             "Lance le dé" => "bg_dice.jpg",
             "Réflexe" => "bg_reflex.jpg",
             "Démineur" => "bg_minesweeper.jpg",
@@ -386,7 +389,7 @@ public class MainPage : ContentPage, IGameUiHost
         body.Children.Add(top);
         var icon = title switch
         {
-            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏",
+            "Puzzle coulissant" => "🧩", "Objet manquant" => "🔎", "Jeu des paires" => "🃏", "Bulles zen" => "🫧",
             "Lance le dé" => "🎲", "Réflexe" => "⚡", "Démineur" => "💎",
             "Pile ou face" => "🪙", "Chasse aux oiseaux – rétro" => "🕹️", _ => "✨"
         };
