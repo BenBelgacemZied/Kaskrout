@@ -63,7 +63,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             }, 52);
             confirm.IsEnabled = selections[player].Count(chosen => chosen) == BombsPerPlayer;
             playArea.Children.Add(counter);
-            playArea.Children.Add(Panel(grid, turnColor));
+            playArea.Children.Add(Panel(grid, Color.FromArgb("#FFF8E8")));
             playArea.Children.Add(confirm);
         }
 
@@ -138,7 +138,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                 grid.Add(button, chipIndex % 3, chipIndex / 3);
             }
 
-            playArea.Children.Add(Panel(grid, Color.FromArgb("#FFF8E8")));
+            playArea.Children.Add(Panel(grid, turnColor));
             playArea.Children.Add(Text($"🔴 {T("Bombe")} • 🟢 {T("Chip sûre")}", 12, true, Color.FromArgb("#40516B")));
             status.Text = T("Choisis une chip du plateau adverse.");
             status.TextColor = Purple;
