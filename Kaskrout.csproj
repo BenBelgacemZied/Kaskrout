@@ -18,5 +18,6 @@
     <MauiIcon Include="Resources\AppIcon\kaskrouticon.png" Color="#715CE8" ForegroundScale="0.72" />
     <MauiImage Include="Resources\Images\*.jpg" />
     <MauiImage Include="Resources\Images\*.svg" />
+    <MauiImage Include="Resources\Images\*.png" />
   </ItemGroup>
 </Project>
