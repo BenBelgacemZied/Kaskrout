@@ -12,9 +12,9 @@ L’application est disponible en français, anglais et néerlandais. Au premier
 - **Solitaire** : joue une partie classique, déplace les suites de cartes, retourne les cartes cachées et complète les quatre fondations.
 - **Lance le dé** et **Pile ou face** : mini-jeux de hasard avec animations.
 - **XP Minesweeper Classic** : trouve les cases sûres, marque les mines et nettoie la grille.
-- **Réflexe** et **Machine surprise**.
+- **Réflexe**, **Chips piégées**, **Snake** et **Chasse aux oiseaux rétro**.
 
-Les points gagnés sont sauvegardés sur l’appareil.
+Les points gagnés sont sauvegardés sur l’appareil. L’écran d’accueil présente les jeux dans des cartes colorées avec un filtre par catégorie.
 
 Après l’installation d’une nouvelle version avec une icône modifiée, désinstalle l’ancienne version puis installe le nouvel APK afin de rafraîchir l’icône du lanceur Android.
 

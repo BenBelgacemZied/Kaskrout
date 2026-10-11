@@ -39,18 +39,13 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             for (var index = 0; index < ChipsPerPlayer; index++)
             {
                 var chipIndex = index;
-                var button = ChipButton("🥔", Color.FromArgb("#F4C86A"));
-                button.Clicked += (_, _) =>
+                var button = ChipView(selections[player][chipIndex] ? "💣" : "", () =>
                 {
-                    if (selections[player][chipIndex])
-                        selections[player][chipIndex] = false;
-                    else if (selections[player].Count(chosen => chosen) < BombsPerPlayer)
-                        selections[player][chipIndex] = true;
+                    if (selections[player][chipIndex]) selections[player][chipIndex] = false;
+                    else if (selections[player].Count(chosen => chosen) < BombsPerPlayer) selections[player][chipIndex] = true;
+                    ShowSetup(player);
+                });
 
-                    button.Text = selections[player][chipIndex] ? "💣" : "🥔";
-                    button.BackgroundColor = selections[player][chipIndex] ? Color.FromArgb("#E56D5E") : Color.FromArgb("#F4C86A");
-                    UpdateCounter();
-                };
                 grid.Add(button, chipIndex % 3, chipIndex / 3);
             }
 
@@ -99,30 +94,22 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             for (var index = 0; index < ChipsPerPlayer; index++)
             {
                 var chipIndex = index;
-                var button = ChipButton(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "💥" : "✓") : "🥔",
-                    eaten[targetPlayer][index] ? Color.FromArgb("#DDE4E8") : Color.FromArgb("#F4C86A"));
-                button.IsEnabled = !eaten[targetPlayer][index];
-                button.Clicked += async (_, _) =>
+                View button = null!;
+                button = ChipView(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "💥" : "✓") : "", async () =>
                 {
                     if (gameOver || eaten[targetPlayer][chipIndex]) return;
                     eaten[targetPlayer][chipIndex] = true;
                     if (bombPositions[targetPlayer][chipIndex])
                         bombsEaten[currentPlayer]++;
 
-                    await button.ScaleToAsync(0.82, 70);
                     if (bombPositions[targetPlayer][chipIndex])
-                    {
-                        button.Text = "💥";
-                        button.BackgroundColor = Color.FromArgb("#F6B2A8");
                         status.Text = $"{T("Bombe !")} {bombsEaten[currentPlayer]} / 3";
-                    }
                     else
-                    {
-                        button.Text = "✓";
-                        button.BackgroundColor = Color.FromArgb("#DDE4E8");
                         status.Text = T("Chip sans bombe.");
-                    }
-                    button.IsEnabled = false;
+                    if (button is Grid cell)
+                        cell.Children.Add(new Label { Text = bombPositions[targetPlayer][chipIndex] ? "💥" : "✓",
+                            FontSize = 25, HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center,
+                            TextColor = Color.FromArgb("#D94D45") });
 
                     if (bombsEaten[currentPlayer] >= BombsPerPlayer)
                     {
@@ -161,16 +148,52 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
         return grid;
     }
 
-    private static Button ChipButton(string text, Color color) => new()
+    private static View ChipView(string text, Action tapped)
     {
-        Text = text,
-        FontSize = 27,
-        Padding = 0,
-        BackgroundColor = color,
-        TextColor = Colors.White,
-        CornerRadius = 22,
-        BorderColor = Color.FromArgb("#FFFDF5"),
-        BorderWidth = 2,
-        Shadow = new Shadow { Brush = Color.FromArgb("#3A664A2A"), Offset = new Point(0, 3), Radius = 7, Opacity = 0.28f }
-    };
+        var grid = new Grid { WidthRequest = 78, HeightRequest = 70 };
+        grid.Children.Add(new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 70, HeightRequest = 58,
+            HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center });
+        if (!string.IsNullOrEmpty(text))
+            grid.Children.Add(new Label { Text = text, FontSize = 27, HorizontalTextAlignment = TextAlignment.Center,
+                VerticalTextAlignment = TextAlignment.Center, TextColor = Color.FromArgb("#D94D45") });
+        var tap = new TapGestureRecognizer();
+        tap.Tapped += (_, _) => tapped();
+        grid.GestureRecognizers.Add(tap);
+        return grid;
+    }
+}
+
+public sealed class CrispDrawable : IDrawable
+{
+    public void Draw(ICanvas canvas, RectF dirtyRect)
+    {
+        canvas.SaveState();
+        canvas.Translate(dirtyRect.Center.X, dirtyRect.Center.Y);
+        canvas.Rotate(-12);
+        var w = dirtyRect.Width * .78f;
+        var h = dirtyRect.Height * .50f;
+        var x = -w / 2; var y = -h / 2;
+        canvas.SetShadow(new SizeF(0, 2), 2, Color.FromArgb("#55452A10"));
+        canvas.FillColor = Color.FromArgb("#D99A35");
+        canvas.FillEllipse(x, y, w, h);
+        canvas.SetShadow(new SizeF(0, 0), 0, Colors.Transparent);
+        canvas.FillColor = Color.FromArgb("#F8D77A");
+        canvas.FillEllipse(x + 2, y + 1, w - 4, h - 5);
+        canvas.StrokeColor = Color.FromArgb("#E6B84F");
+        canvas.StrokeSize = 1.2f;
+        canvas.DrawEllipse(x + 5, y + 4, w - 10, h - 11);
+        canvas.StrokeColor = Color.FromArgb("#FFE8A0");
+        canvas.StrokeSize = 1.4f;
+        for (var i = -1; i <= 1; i++)
+        {
+            var yy = i * h * .17f;
+            canvas.DrawLine(-w * .30f, yy, -w * .12f, yy + h * .035f);
+            canvas.DrawLine(-w * .12f, yy + h * .035f, w * .08f, yy - h * .025f);
+            canvas.DrawLine(w * .08f, yy - h * .025f, w * .29f, yy + h * .01f);
+        }
+        canvas.FillColor = Color.FromArgb("#B87525");
+        foreach (var p in new[] { new PointF(-.27f,-.12f), new PointF(.22f,-.10f), new PointF(-.08f,.10f), new PointF(.29f,.12f), new PointF(.03f,-.18f) })
+            canvas.FillCircle(p.X * w, p.Y * h, Math.Max(1.2f, w * .018f));
+        canvas.RestoreState();
+    }
 }

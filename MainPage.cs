@@ -16,7 +16,7 @@ public class MainPage : ContentPage, IGameUiHost
     {
         ["Une petite pause ?"] = ["A little break?", "Even pauze?"] ,
         ["Choisis un mini-défi et amuse-toi !"] = ["Pick a mini challenge and have fun!", "Kies een mini-uitdaging en veel plezier!"],
-        ["points"] = ["points", "punten"], ["Aventure"] = ["Adventure", "Avontuur"], ["CHOISIS UNE CONSTRUCTION POUR COMMENCER."] = ["Choose a building to get started.", "Kies een gebouw om te beginnen."], ["Construis ton village"] = ["Build your village", "Bouw je dorp"], ["Joue aux mini-jeux pour gagner des pièces, puis utilise-les ici."] = ["Play mini-games to earn coins, then spend them here.", "Speel minigames om munten te verdienen en geef ze hier uit."], ["CONSTRUCTION TERMINÉE !"] = ["BUILD COMPLETE!", "BOUW VOLTOOID!"], ["Construis ton village avec les pièces gagnées dans les mini-jeux."] = ["Build your village with coins earned in mini-games.", "Bouw je dorp met munten die je in minigames verdient."], ["Budget"] = ["Budget", "Budget"], ["Parcelle libre"] = ["Empty plot", "Lege kavel"], ["Maison"] = ["House", "Huis"], ["Un premier toit pour ton village."] = ["A first roof for your village.", "Een eerste dak voor je dorp."], ["Jardin"] = ["Garden", "Tuin"], ["Tente"] = ["Tent", "Tent"], ["Un petit abri dans le jardin."] = ["A small shelter in your garden.", "Een kleine schuilplaats in je tuin."], ["Construis d’abord le jardin."] = ["Build the garden first.", "Bouw eerst de tuin."], ["Un coin de nature pour te détendre."] = ["A peaceful place in nature.", "Een rustig plekje in de natuur."], ["Atelier"] = ["Workshop", "Werkplaats"], ["Un atelier pour développer ton village."] = ["A workshop to grow your village.", "Een werkplaats om je dorp te laten groeien."], ["Construire"] = ["Build", "Bouwen"], ["Déjà construit ✓"] = ["Already built ✓", "Al gebouwd ✓"], ["Il te manque"] = ["You still need", "Je hebt nog nodig"], ["pièces. Joue à un mini-jeu pour en gagner."] = ["more coins. Play a mini-game to earn some.", "munten. Speel een minigame om munten te verdienen."], ["Bravo !"] = ["Well done!", "Goed gedaan!"], ["construit !"] = ["built!", "gebouwd!"], ["CHOISIS TON JEU"] = ["CHOOSE A GAME", "KIES EEN SPEL"],
+        ["points"] = ["points", "punten"], ["CHOISIS UNE CONSTRUCTION POUR COMMENCER."] = ["Choose a building to get started.", "Kies een gebouw om te beginnen."], ["Construis ton village"] = ["Build your village", "Bouw je dorp"], ["Joue aux mini-jeux pour gagner des pièces, puis utilise-les ici."] = ["Play mini-games to earn coins, then spend them here.", "Speel minigames om munten te verdienen en geef ze hier uit."], ["CONSTRUCTION TERMINÉE !"] = ["BUILD COMPLETE!", "BOUW VOLTOOID!"], ["Construis ton village avec les pièces gagnées dans les mini-jeux."] = ["Build your village with coins earned in mini-games.", "Bouw je dorp met munten die je in minigames verdient."], ["Budget"] = ["Budget", "Budget"], ["Parcelle libre"] = ["Empty plot", "Lege kavel"], ["Maison"] = ["House", "Huis"], ["Un premier toit pour ton village."] = ["A first roof for your village.", "Een eerste dak voor je dorp."], ["Jardin"] = ["Garden", "Tuin"], ["Tente"] = ["Tent", "Tent"], ["Un petit abri dans le jardin."] = ["A small shelter in your garden.", "Een kleine schuilplaats in je tuin."], ["Construis d’abord le jardin."] = ["Build the garden first.", "Bouw eerst de tuin."], ["Un coin de nature pour te détendre."] = ["A peaceful place in nature.", "Een rustig plekje in de natuur."], ["Atelier"] = ["Workshop", "Werkplaats"], ["Un atelier pour développer ton village."] = ["A workshop to grow your village.", "Een werkplaats om je dorp te laten groeien."], ["Construire"] = ["Build", "Bouwen"], ["Déjà construit ✓"] = ["Already built ✓", "Al gebouwd ✓"], ["Il te manque"] = ["You still need", "Je hebt nog nodig"], ["pièces. Joue à un mini-jeu pour en gagner."] = ["more coins. Play a mini-game to earn some.", "munten. Speel een minigame om munten te verdienen."], ["Bravo !"] = ["Well done!", "Goed gedaan!"], ["construit !"] = ["built!", "gebouwd!"], ["CHOISIS TON JEU"] = ["CHOOSE A GAME", "KIES EEN SPEL"],
         ["Puzzle"] = ["Puzzle", "Puzzel"], ["Remets les tuiles en ordre"] = ["Put the tiles in order", "Zet de tegels op volgorde"],
         ["Objet manquant"] = ["Missing object", "Ontbrekend voorwerp"], ["Observe, puis retrouve-le"] = ["Look, then find what's missing", "Kijk goed en vind wat ontbreekt"],
         ["Paires"] = ["Matching pairs", "Paren"], ["Associe les images identiques"] = ["Match the identical pictures", "Zoek de gelijke plaatjes"],
@@ -134,18 +134,17 @@ public class MainPage : ContentPage, IGameUiHost
 
         var games = new (string Icon, string Title, string Detail, string Color, string Category, Action Play)[]
         {
-            ("🧩", "Puzzle", "Remets les tuiles en ordre", "#EEEAFE", "Réflexion", () => LaunchGame(GameIds.Puzzle)),
-            ("👀", "Objet manquant", "Observe, puis retrouve-le", "#E4F5F1", "Réflexion", () => LaunchGame(GameIds.MissingObject)),
-            ("🎴", "Paires", "Associe les images identiques", "#FFF0E4", "Réflexion", () => LaunchGame(GameIds.Pairs)),
-            ("🥔", "Chips piégées", "Cache 3 bombes et défie un ami", "#FFF0D9", "Réflexion", () => LaunchGame(GameIds.ChipsBomb)),
-            ("🐍", "Snake", "Guide le serpent et mange les pommes.", "#E5F6E8", "Arcade", () => LaunchGame(GameIds.Snake)),
-            ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", "#E8F3FF", "Rapide", () => LaunchGame(GameIds.Dice)),
-            ("⚡", "Réflexe", "Attends le vert et appuie", "#FFE9EC", "Rapide", () => LaunchGame(GameIds.Reflex)),
-            ("💎", "Démineur", "Repère les cases sûres", "#E8EEF5", "Réflexion", () => LaunchGame(GameIds.Minesweeper)),
-            ("🪙", "Pile ou face", "La pièce choisit pour toi", "#FFF2D3", "Rapide", () => LaunchGame(GameIds.Coin)),
-            ("🕹️", "Chasse aux oiseaux – rétro", "Vise les oiseaux et appuie pour tirer.", "#E7F4FF", "Arcade", () => LaunchGame(GameIds.BirdShooter)),
-            ("🏡", "Aventure", "Construis ton village avec les pièces gagnées dans les mini-jeux.", "#E7F2E5", "Aventure", () => LaunchGame(GameIds.Adventure))
-        };
+            ("🧩", "Puzzle", "Remets les tuiles en ordre", #7158E8, "Réflexion", () => LaunchGame(GameIds.Puzzle)),
+            ("👀", "Objet manquant", "Observe, puis retrouve-le", #149C85, "Réflexion", () => LaunchGame(GameIds.MissingObject)),
+            ("🎴", "Paires", "Associe les images identiques", #E96F4C, "Réflexion", () => LaunchGame(GameIds.Pairs)),
+            ("", "Chips piégées", "Cache 3 bombes et défie un ami", "#D98218", "Duo", () => LaunchGame(GameIds.ChipsBomb)),
+            ("🐍", "Snake", "Guide le serpent et mange les pommes.", #29985E, "Arcade", () => LaunchGame(GameIds.Snake)),
+            ("🎲", "Lance le dé", "Un lancer porte-bonheur ?", #347DD3, "Rapide", () => LaunchGame(GameIds.Dice)),
+            ("⚡", "Réflexe", "Attends le vert et appuie", #D84E70, "Rapide", () => LaunchGame(GameIds.Reflex)),
+            ("💎", "Démineur", "Repère les cases sûres", #526B88, "Réflexion", () => LaunchGame(GameIds.Minesweeper)),
+            ("🪙", "Pile ou face", "La pièce choisit pour toi", #A96D12, "Rapide", () => LaunchGame(GameIds.Coin)),
+            ("🕹️", "Chasse aux oiseaux – rétro", "Vise les oiseaux et appuie pour tirer.", #2384AF, "Arcade", () => LaunchGame(GameIds.BirdShooter)),
+                    };
 
         var scorePill = new Border
         {
@@ -188,7 +187,10 @@ public class MainPage : ContentPage, IGameUiHost
             }
         };
         featuredContent.Add(featuredText, 0, 0);
-        featuredContent.Add(new Label { Text = featured.Icon, FontSize = 48, VerticalOptions = LayoutOptions.Center }, 1, 0);
+        if (featured.Title == "Chips piégées")
+            featuredContent.Add(new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 68, HeightRequest = 60, VerticalOptions = LayoutOptions.Center }, 1, 0);
+        else
+            featuredContent.Add(new Label { Text = featured.Icon, FontSize = 48, VerticalOptions = LayoutOptions.Center }, 1, 0);
         var featuredButton = MakeButton(F($"Jouer à {featured.Title}  →", $"Play {featured.Title}  →", $"Speel {featured.Title}  →"), Colors.White, featured.Play, 46);
         featuredButton.TextColor = Color.FromArgb("#5A43C7");
         featuredButton.FontSize = 15;
@@ -252,7 +254,7 @@ public class MainPage : ContentPage, IGameUiHost
         };
         titleRow.Add(new Label { Text = F("CHOISIS TON PROCHAIN DÉFI", "PICK YOUR NEXT CHALLENGE", "KIES JE VOLGENDE UITDAGING"),
             FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = Ink, HorizontalTextAlignment = TextAlignment.Start, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        var gameCountLabel = new Label { Text = F("11 JEUX", "11 GAMES", "11 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
+        var gameCountLabel = new Label { Text = F("10 JEUX", "10 GAMES", "10 SPELLEN"), FontSize = 10, FontAttributes = FontAttributes.Bold,
             TextColor = Muted, VerticalTextAlignment = TextAlignment.Center };
         titleRow.Add(gameCountLabel, 1, 0);
         body.Children.Add(titleRow);
@@ -273,30 +275,48 @@ public class MainPage : ContentPage, IGameUiHost
             for (var i = 0; i < visibleGames.Length; i++)
             {
                 var game = visibleGames[i];
+                View gameIcon = game.Title == "Chips piégées"
+                    ? new GraphicsView { Drawable = new CrispDrawable(), WidthRequest = 44, HeightRequest = 36 }
+                    : Text(game.Icon, 30);
+                var iconBadge = new Border
+                {
+                    WidthRequest = 58, HeightRequest = 58, HorizontalOptions = LayoutOptions.Center,
+                    BackgroundColor = Color.FromArgb("#35FFFFFF"),
+                    Stroke = Color.FromArgb("#65FFFFFF"), StrokeThickness = 1,
+                    StrokeShape = new RoundRectangle { CornerRadius = 19 },
+                    Content = gameIcon
+                };
+                var categoryBadge = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#28FFFFFF"), StrokeThickness = 0,
+                    StrokeShape = new RoundRectangle { CornerRadius = 10 }, Padding = new Thickness(8, 3),
+                    HorizontalOptions = LayoutOptions.Center,
+                    Content = new Label { Text = F(game.Category == "Duo" ? "À DEUX" : game.Category.ToUpperInvariant(),
+                        game.Category == "Duo" ? "TWO PLAYER" : game.Category.ToUpperInvariant(),
+                        game.Category == "Duo" ? "MET TWEE" : game.Category.ToUpperInvariant()),
+                        FontSize = 9, FontAttributes = FontAttributes.Bold, TextColor = Colors.White }
+                };
                 var cardContent = new VerticalStackLayout
                 {
-                    Spacing = 5, VerticalOptions = LayoutOptions.Center,
-                    Children =
-                    {
-                        new Border
-                        {
-                            WidthRequest = 43, HeightRequest = 43, HorizontalOptions = LayoutOptions.Center,
-                            BackgroundColor = Color.FromArgb(game.Color),
-                            StrokeThickness = 0,
-                            StrokeShape = new RoundRectangle { CornerRadius = 16 },
-                            Content = Text(game.Icon, 24)
-                        },
-                        Text(game.Title, 14, true),
-                        Text(game.Detail, 11, false, Muted)
-                    }
+                    Spacing = 7, VerticalOptions = LayoutOptions.Center,
+                    Children = { categoryBadge, iconBadge,
+                        new Label { Text = T(game.Title), FontSize = 15, FontAttributes = FontAttributes.Bold,
+                            TextColor = Colors.White, HorizontalTextAlignment = TextAlignment.Center },
+                        new Label { Text = T(game.Detail), FontSize = 11, TextColor = Color.FromArgb("#EFFFFFFF"),
+                            HorizontalTextAlignment = TextAlignment.Center, LineBreakMode = LineBreakMode.WordWrap, MaxLines = 2 } }
                 };
                 var card = new Border
                 {
-                    BackgroundColor = Colors.White,
-                    Stroke = Color.FromArgb(game.Color), StrokeThickness = 1,
-                    StrokeShape = new RoundRectangle { CornerRadius = 22 },
-                    Padding = new Thickness(10, 12), HeightRequest = 143,
-                    Shadow = new Shadow { Brush = Color.FromArgb("#18202743"), Offset = new Point(0, 3), Radius = 8, Opacity = 0.12f },
+                    Background = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0), EndPoint = new Point(1, 1),
+                        GradientStops = { new GradientStop(Color.FromArgb(game.Color), 0),
+                            new GradientStop(Color.FromArgb("#38445D"), 1) }
+                    },
+                    Stroke = Color.FromArgb("#75FFFFFF"), StrokeThickness = 1,
+                    StrokeShape = new RoundRectangle { CornerRadius = 25 },
+                    Padding = new Thickness(11, 12), HeightRequest = 178,
+                    Shadow = new Shadow { Brush = Color.FromArgb("#4838445D"), Offset = new Point(0, 5), Radius = 13, Opacity = 0.3f },
                     Content = cardContent
                 };
                 var tap = new TapGestureRecognizer();
@@ -311,9 +331,9 @@ public class MainPage : ContentPage, IGameUiHost
             }
         }
 
-        var filters = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center };
+        var filters = new HorizontalStackLayout { Spacing = 8, Padding = new Thickness(1, 0, 2, 0) };
         var categories = new[] { (Key: "Tous", Fr: "Tous", En: "All", Nl: "Alles"), (Key: "Rapide", Fr: "Rapides", En: "Quick", Nl: "Snel"),
-            (Key: "Réflexion", Fr: "Réflexion", En: "Brain", Nl: "Denken"), (Key: "Cartes", Fr: "Cartes", En: "Cards", Nl: "Kaarten") };
+            (Key: "Réflexion", Fr: "Réflexion", En: "Brain", Nl: "Denken"), (Key: "Cartes", Fr: "Cartes", En: "Cards", Nl: "Kaarten"), (Key: "Arcade", Fr: "Arcade", En: "Arcade", Nl: "Arcade"), (Key: "Duo", Fr: "À deux", En: "Two player", Nl: "Met twee") };
         foreach (var category in categories)
         {
             var selected = category.Key == activeCategory;
@@ -338,7 +358,7 @@ public class MainPage : ContentPage, IGameUiHost
             };
             filters.Children.Add(chip);
         }
-        body.Children.Add(filters);
+        body.Children.Add(new ScrollView { Orientation = ScrollOrientation.Horizontal, Content = filters, HorizontalScrollBarVisibility = ScrollBarVisibility.Never });
         body.Children.Add(grid);
         RenderGames();
     }

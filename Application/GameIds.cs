@@ -12,5 +12,4 @@ public static class GameIds
     public const string Reflex = "reflex";
     public const string Minesweeper = "minesweeper";
     public const string Coin = "coin";
-    public const string Adventure = "adventure";
 }
