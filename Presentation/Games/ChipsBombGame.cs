@@ -163,5 +163,3 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
         return grid;
     }
 }
-
-}
