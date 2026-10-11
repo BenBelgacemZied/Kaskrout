@@ -104,8 +104,10 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
 
                     if (bombPositions[targetPlayer][chipIndex])
                         status.Text = $"{T("Bombe !")} {bombsEaten[currentPlayer]} / 3";
+                    status.TextColor = Color.FromArgb("#C6283D");
                     else
                         status.Text = T("Chip sans bombe.");
+                    status.TextColor = Color.FromArgb("#168A55");
                     if (button is Grid cell)
                         cell.Children.Add(ChipMarker(bombPositions[targetPlayer][chipIndex] ? "bomb" : "safe"));
 
@@ -129,6 +131,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             playArea.Children.Add(Panel(grid, Color.FromArgb("#FFF8E8")));
             playArea.Children.Add(Text(Format("Rouge : bombe • Vert : chip sûre", "Red: bomb • Green: safe chip", "Rood: bom • Groen: veilige chip"), 12, true, Color.FromArgb("#40516B")));
             status.Text = T("Choisis une chip du plateau adverse.");
+            status.TextColor = Purple;
         }
 
         body.Children.Add(playArea);
