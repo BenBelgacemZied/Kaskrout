@@ -23,6 +23,8 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
 
         void ShowSetup(int player)
         {
+            playArea.BackgroundColor = player == 0 ? Color.FromArgb("#EAF3FF") : Color.FromArgb("#FFF0DF");
+            playArea.Padding = new Thickness(10);
             playArea.Children.Clear();
             playArea.Children.Add(Text($"{T("Joueur")} {player + 1} : {T("Choisis 3 chips piégées.")}", 17, true));
             var counter = Text("", 15, true, Purple);
@@ -61,12 +63,14 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             }, 52);
             confirm.IsEnabled = selections[player].Count(chosen => chosen) == BombsPerPlayer;
             playArea.Children.Add(counter);
-            playArea.Children.Add(Panel(grid, Color.FromArgb("#FFF8E8")));
+            playArea.Children.Add(Panel(grid, turnColor));
             playArea.Children.Add(confirm);
         }
 
         void ShowPassScreen(int nextPlayer, Action continueAction)
         {
+            playArea.BackgroundColor = Colors.Transparent;
+            playArea.Padding = 0;
             playArea.Children.Clear();
             playArea.Children.Add(Panel(new VerticalStackLayout
             {
@@ -85,8 +89,11 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             if (gameOver) return;
             currentPlayer = 1 - currentPlayer;
             var targetPlayer = 1 - currentPlayer;
+            var turnColor = currentPlayer == 0 ? Color.FromArgb("#EAF3FF") : Color.FromArgb("#FFF0DF");
+            playArea.BackgroundColor = turnColor;
+            playArea.Padding = new Thickness(10);
             playArea.Children.Clear();
-            playArea.Children.Add(Text($"{T("Joueur")} {currentPlayer + 1}, choisis une chip du joueur {targetPlayer + 1}.", 17, true));
+            playArea.Children.Add(Panel(Text($"{T("Joueur")} {currentPlayer + 1}, choisis une chip du joueur {targetPlayer + 1}.", 17, true), turnColor));
             playArea.Children.Add(Text($"{T("Bombes mangées")} : {bombsEaten[currentPlayer]} / 3", 15, true, Color.FromArgb("#D94D68")));
             playArea.Children.Add(Text($"{T("Joueur")} {targetPlayer + 1} : {9 - eaten[targetPlayer].Count(value => value)} chips restantes", 13, false, Muted));
 
@@ -95,7 +102,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             {
                 var chipIndex = index;
                 View button = null!;
-                button = ChipView(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "bomb" : "safe") : "", async () =>
+                button = ChipView(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "bomb" : "safe") : "", () =>
                 {
                     if (gameOver || eaten[targetPlayer][chipIndex]) return;
                     eaten[targetPlayer][chipIndex] = true;
@@ -126,8 +133,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                         return;
                     }
 
-                    await Task.Delay(650);
-                    ShowPassScreen(1 - currentPlayer, ShowTurn);
+                    ShowTurn();
                 });
                 grid.Add(button, chipIndex % 3, chipIndex / 3);
             }
