@@ -19,6 +19,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
         var bombsEaten = new int[2];
         var currentPlayer = 1;
         var gameOver = false;
+        var resultAwaitingNextTurn = false;
         var status = Text("Choisis une chip du plateau adverse.", 15, true, Purple);
 
         void ShowSetup(int player)
@@ -87,6 +88,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
         void ShowTurn()
         {
             if (gameOver) return;
+            resultAwaitingNextTurn = false;
             currentPlayer = 1 - currentPlayer;
             var targetPlayer = 1 - currentPlayer;
             var turnColor = currentPlayer == 0 ? Color.FromArgb("#EAF3FF") : Color.FromArgb("#FFF0DF");
@@ -94,7 +96,8 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
             playArea.Padding = new Thickness(10);
             playArea.Children.Clear();
             playArea.Children.Add(Panel(Text($"{T("Joueur")} {currentPlayer + 1}, choisis une chip du joueur {targetPlayer + 1}.", 17, true), turnColor));
-            playArea.Children.Add(Text($"{T("Bombes mangées")} : {bombsEaten[currentPlayer]} / 3", 15, true, Color.FromArgb("#D94D68")));
+            var bombsLabel = Text($"{T("Bombes mangées")} : {bombsEaten[currentPlayer]} / 3", 15, true, Color.FromArgb("#D94D68"));
+            playArea.Children.Add(bombsLabel);
             playArea.Children.Add(Text($"{T("Joueur")} {targetPlayer + 1} : {9 - eaten[targetPlayer].Count(value => value)} chips restantes", 13, false, Muted));
 
             var grid = CreateChipGrid();
@@ -104,10 +107,11 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                 View button = null!;
                 button = ChipView(eaten[targetPlayer][index] ? (bombPositions[targetPlayer][index] ? "bomb" : "safe") : "", () =>
                 {
-                    if (gameOver || eaten[targetPlayer][chipIndex]) return;
+                    if (gameOver || resultAwaitingNextTurn || eaten[targetPlayer][chipIndex]) return;
                     eaten[targetPlayer][chipIndex] = true;
                     if (bombPositions[targetPlayer][chipIndex])
                         bombsEaten[currentPlayer]++;
+                    bombsLabel.Text = $"{T("Bombes mangées")} : {bombsEaten[currentPlayer]} / 3";
 
                     if (bombPositions[targetPlayer][chipIndex])
                     {
@@ -133,7 +137,10 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                         return;
                     }
 
-                    ShowTurn();
+                    resultAwaitingNextTurn = true;
+                    foreach (var chipCell in grid.Children)
+                        chipCell.IsEnabled = false;
+                    playArea.Children.Add(MakeButton("Joueur suivant", Purple, ShowTurn, 52));
                 });
                 grid.Add(button, chipIndex % 3, chipIndex / 3);
             }
