@@ -138,7 +138,7 @@ public sealed class ChipsBombGame(IGameUiHost host) : GameModuleBase(host)
                     }
 
                     resultAwaitingNextTurn = true;
-                    foreach (var chipCell in grid.Children)
+                    foreach (var chipCell in grid.Children.OfType<VisualElement>())
                         chipCell.IsEnabled = false;
                     playArea.Children.Add(MakeButton("Joueur suivant", Purple, ShowTurn, 52));
                 });
