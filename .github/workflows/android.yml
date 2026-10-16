@@ -24,7 +24,7 @@ jobs:
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: |
           if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_STORE_PASSWORD" ]; then
-            echo "Configure ANDROID_KEYSTORE_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD, and ANDROID_STORE_PASSWORD in GitHub Actions secrets before building a Play-ready AAB."
+            echo "Configure ANDROID_KEYSTORE_BASE64, ANDROID_KEY_ALIAS, and ANDROID_STORE_PASSWORD in GitHub Actions secrets before building a Play-ready AAB."
             exit 1
           fi
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/kaskrout-upload-key.jks"
@@ -41,7 +41,6 @@ jobs:
       - name: Build Android App Bundle
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: >-
           dotnet publish Kaskrout.csproj -f net10.0-android -c Release
@@ -62,7 +61,6 @@ jobs:
       - name: Build APK
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: >-
           dotnet publish Kaskrout.csproj -f net10.0-android -c Release
