@@ -29,6 +29,17 @@ jobs:
             exit 1
           fi
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/kaskrout-upload-key.jks"
+      - name: Validate Android signing key
+        env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          keytool -list -keystore "$RUNNER_TEMP/kaskrout-upload-key.jks" -storepass "$ANDROID_STORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null
+          echo "Keystore password and alias are valid."
+          keytool -certreq -alias "$ANDROID_KEY_ALIAS" -keystore "$RUNNER_TEMP/kaskrout-upload-key.jks" -storepass "$ANDROID_STORE_PASSWORD" -keypass "$ANDROID_KEY_PASSWORD" -file "$RUNNER_TEMP/kaskrout-upload-key.csr" >/dev/null
+          rm -f "$RUNNER_TEMP/kaskrout-upload-key.csr"
+          echo "Key password is valid."
       - name: Build Android App Bundle
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
