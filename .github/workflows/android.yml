@@ -21,10 +21,9 @@ jobs:
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: |
-          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ] || [ -z "$ANDROID_STORE_PASSWORD" ]; then
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_STORE_PASSWORD" ]; then
             echo "Configure ANDROID_KEYSTORE_BASE64, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD, and ANDROID_STORE_PASSWORD in GitHub Actions secrets before building a Play-ready AAB."
             exit 1
           fi
@@ -32,14 +31,13 @@ jobs:
       - name: Validate Android signing key
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: |
           keytool -list -keystore "$RUNNER_TEMP/kaskrout-upload-key.jks" -storepass "$ANDROID_STORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null
           echo "Keystore password and alias are valid."
-          keytool -certreq -alias "$ANDROID_KEY_ALIAS" -keystore "$RUNNER_TEMP/kaskrout-upload-key.jks" -storepass "$ANDROID_STORE_PASSWORD" -keypass "$ANDROID_KEY_PASSWORD" -file "$RUNNER_TEMP/kaskrout-upload-key.csr" >/dev/null
+          keytool -certreq -alias "$ANDROID_KEY_ALIAS" -keystore "$RUNNER_TEMP/kaskrout-upload-key.jks" -storepass "$ANDROID_STORE_PASSWORD" -keypass "$ANDROID_STORE_PASSWORD" -file "$RUNNER_TEMP/kaskrout-upload-key.csr" >/dev/null
           rm -f "$RUNNER_TEMP/kaskrout-upload-key.csr"
-          echo "Key password is valid."
+          echo "PKCS12 signing credentials are valid."
       - name: Build Android App Bundle
         env:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -51,7 +49,7 @@ jobs:
           -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore="$RUNNER_TEMP/kaskrout-upload-key.jks"
           -p:AndroidSigningKeyAlias="$ANDROID_KEY_ALIAS"
-          -p:AndroidSigningKeyPass="$ANDROID_KEY_PASSWORD"
+          -p:AndroidSigningKeyPass="$ANDROID_STORE_PASSWORD"
           -p:AndroidSigningStorePass="$ANDROID_STORE_PASSWORD"
           -o ./artifacts/aab
       - name: Upload Android App Bundle
@@ -72,7 +70,7 @@ jobs:
           -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore="$RUNNER_TEMP/kaskrout-upload-key.jks"
           -p:AndroidSigningKeyAlias="$ANDROID_KEY_ALIAS"
-          -p:AndroidSigningKeyPass="$ANDROID_KEY_PASSWORD"
+          -p:AndroidSigningKeyPass="$ANDROID_STORE_PASSWORD"
           -p:AndroidSigningStorePass="$ANDROID_STORE_PASSWORD"
           -o ./artifacts/apk
       - name: Upload APK artifact
